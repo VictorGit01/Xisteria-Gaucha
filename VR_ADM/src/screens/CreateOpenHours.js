@@ -2,20 +2,20 @@ import React, { useEffect, useState, useContext } from 'react';
 import { connect } from 'react-redux';
 import { View, Button, Platform, Dimensions, ToastAndroid } from 'react-native';
 import { NavigationEvents } from 'react-navigation';
+import { normalize } from '../functions';
 import styled from 'styled-components/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontIcon from 'react-native-vector-icons/FontAwesome5';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import moment from 'react-moment';
 
 // Contexts:
 import LoaderContext from '../contexts/LoaderContext';
 
 const { height, width } = Dimensions.get('window')
 
-function normalize(size) {
-    return (width + height) / size
-}
+// function normalize(size) {
+//     return (width + height) / size
+// }
 
 const Page = styled.SafeAreaView`
     flex: 1;
@@ -31,7 +31,7 @@ const Item = styled.TouchableHighlight`
     flex-direction: row;
     width: 100%;
     align-items: center;
-    border-bottom-width: 1px;
+    border-bottom-width: ${normalize(1)}px;
     border-color: #ccc;
 `
 // padding: 15px 10px;
@@ -48,15 +48,15 @@ const OverlayContainer = styled.View`
 
 const Header = styled.View`
     flex-direction: row;
-    background-color: rgba(0, 0, 0, .08)
-    border-bottom-width: 1px;
+    background-color: rgba(0, 0, 0, .08);
+    border-bottom-width: ${normalize(1)}px;
     border-color: #ccc;
-    padding-vertical: 10px;
-    padding-horizontal: 15px;
+    padding-vertical: ${normalize(10)}px;
+    padding-horizontal: ${normalize(15)}px;
 `
 
 const Title = styled.Text`
-    font-size: 18px;
+    font-size: ${normalize(18)}px;
     font-weight: bold;
     color: #333;
     border-color: #ccc;
@@ -65,7 +65,7 @@ const Title = styled.Text`
 const LeftItem = styled.View`
     flex-direction: row;
     width: 35%;
-    padding-left: ${props => props.pdLeft || 10}px;
+    padding-left: ${props => props.pdLeft || normalize(10)}px;
 `
 
 const RightItem = styled.View`
@@ -74,23 +74,23 @@ const RightItem = styled.View`
     height: 100%;
     justify-content: flex-start;
     align-items: center;
-    padding-right: ${props => props.pdRight || 10}px;
+    padding-right: ${props => props.pdRight || normalize(10)}px;
 `
 
 const BoxSquare = styled.View`
-    height: 24px;
-    width: 24px;
+    height: ${normalize(24)}px;
+    width: ${normalize(24)}px;
     justify-content: center;
     align-items: center;
     background-color: ${props => props.selected ? '#fff' : '#ddd'};
-    border: 5px solid ${props => props.selected ? '#fe9601' : '#ddd'};
-    border-radius: 3px;
-    margin-right: 15px;
-    margin-left: 5px;
+    border: ${normalize(5)}px solid ${props => props.selected ? '#fe9601' : '#ddd'};
+    border-radius: ${normalize(3)}px;
+    margin-right: ${normalize(15)}px;
+    margin-left: ${normalize(5)}px;
 `
 
 const ItemText = styled.Text`
-    font-size: ${props => props.size || 18}px;
+    font-size: ${props => props.size || normalize(18)}px;
     color: ${props => props.color || '#000'};
 `
 
@@ -99,8 +99,8 @@ const DoubleAction = styled.View`
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    padding-horizontal: 5px;
-    padding-vertical: 10px;
+    padding-horizontal: ${normalize(5)}px;
+    padding-vertical: ${normalize(10)}px;
 `;
 // width: 100%
 // margin-top: ${normalize(50)}px;
@@ -117,58 +117,60 @@ const Input = styled.TextInput`
 `
 
 const ButtonInput = styled.TouchableOpacity`
-    border-bottom-width: 1px;
+    border-bottom-width: ${normalize(1)}px;
     border-color: #fe9601;
     justify-content: center;
     align-items: center;
-    padding-vertical: 5px;
+    padding-vertical: ${normalize(5)}px;
 `;
 // height: 43px;
 // margin-top: ${normalize(150)}px
 // padding-vertical: ${normalize(100)}px;
 // padding-vertical: 10px;
 
-const ButtonSave = styled.TouchableOpacity`
-    height: ${normalize(24)}px;
+const ButtonSave = styled.TouchableHighlight`
+    height: ${normalize(48)}px;
     width: 90%;
     justify-content: center;
     align-items: center;
     background-color: #fe9601;
-    border-radius: 3px;
-    margin-vertical: 60px;
+    border-radius: ${normalize(3)}px;
+    margin-vertical: ${normalize(60)}px;
 `
+// height: ${normalize(24)}px;
 
 const ButtonText = styled.Text`
-    font-size: ${props => props.size || normalize(63)}px;
+    font-size: ${props => props.size || normalize(18)}px;
     font-weight: bold;
     color: ${props => props.color || '#fff'};
 `
+// font-size: ${props => props.size || normalize(63)}px;
 
 const ButtonCopy = styled.TouchableOpacity`
     flex-direction: row;
-    padding-horizontal: 15px;
-    padding-vertical: 15px;
+    padding-horizontal: ${normalize(15)}px;
+    padding-vertical: ${normalize(15)}px;
 `
 
 const Screen = (props) => {
     const [ schedulesP1, setSchedulesP1 ] = useState([
-        {day: 'Domingo', begin: '', end: '', date_beg: undefined, date_end: undefined},
-        {day: 'Segunda', begin: '', end: '', date_beg: undefined, date_end: undefined},
-        {day: 'Terça', begin: '', end: '', date_beg: undefined, date_end: undefined},
-        {day: 'Quarta', begin: '', end: '', date_beg: undefined, date_end: undefined},
-        {day: 'Quinta', begin: '', end: '', date_beg: undefined, date_end: undefined},
-        {day: 'Sexta', begin: '', end: '', date_beg: undefined, date_end: undefined},
-        {day: 'Sábado', begin: '', end: '', date_beg: undefined, date_end: undefined},
+        {day: 'Domingo', id: 0, begin: '', end: '', date_beg: undefined, date_end: undefined},
+        {day: 'Segunda', id: 1, begin: '', end: '', date_beg: undefined, date_end: undefined},
+        {day: 'Terça', id: 2, begin: '', end: '', date_beg: undefined, date_end: undefined},
+        {day: 'Quarta', id: 3, begin: '', end: '', date_beg: undefined, date_end: undefined},
+        {day: 'Quinta', id: 4, begin: '', end: '', date_beg: undefined, date_end: undefined},
+        {day: 'Sexta', id: 5, begin: '', end: '', date_beg: undefined, date_end: undefined},
+        {day: 'Sábado', id: 6, begin: '', end: '', date_beg: undefined, date_end: undefined},
     ])
 
     const [ schedulesP2, setSchedulesP2 ] = useState([
-        {day: 'Domingo', begin: '', end: '', date_beg: undefined, date_end: undefined},
-        {day: 'Segunda', begin: '', end: '', date_beg: undefined, date_end: undefined},
-        {day: 'Terça', begin: '', end: '', date_beg: undefined, date_end: undefined},
-        {day: 'Quarta', begin: '', end: '', date_beg: undefined, date_end: undefined},
-        {day: 'Quinta', begin: '', end: '', date_beg: undefined, date_end: undefined},
-        {day: 'Sexta', begin: '', end: '', date_beg: undefined, date_end: undefined},
-        {day: 'Sábado', begin: '', end: '', date_beg: undefined, date_end: undefined},
+        {day: 'Domingo', id: 0, begin: '', end: '', date_beg: undefined, date_end: undefined},
+        {day: 'Segunda', id: 1, begin: '', end: '', date_beg: undefined, date_end: undefined},
+        {day: 'Terça', id: 2, begin: '', end: '', date_beg: undefined, date_end: undefined},
+        {day: 'Quarta', id: 3, begin: '', end: '', date_beg: undefined, date_end: undefined},
+        {day: 'Quinta', id: 4, begin: '', end: '', date_beg: undefined, date_end: undefined},
+        {day: 'Sexta', id: 5, begin: '', end: '', date_beg: undefined, date_end: undefined},
+        {day: 'Sábado', id: 6, begin: '', end: '', date_beg: undefined, date_end: undefined},
     ])
     // const [ domP1, setDomP1 ] = useState('')
     // const [ segP1, setSegP1 ] = useState('')
@@ -189,6 +191,16 @@ const Screen = (props) => {
     const { navigation } = props
     const goBack = navigation.goBack
 
+    const toastMsg = (msg) => {
+        ToastAndroid.showWithGravityAndOffset(
+            msg.toString(),
+            ToastAndroid.SHORT,
+            ToastAndroid.BOTTOM,
+            0,
+            180
+        )
+    }
+
     function onScreen() {
         if (props.schedulesP1.length > 0) {
             let schedulesP1Copy = Array.from(schedulesP1)
@@ -198,13 +210,8 @@ const Screen = (props) => {
 
             setSelectedDaysP1(filteredDaysP1Index)
 
-            console.log('Props')
-            console.log(props.schedulesP1)
             props.schedulesP1.map(item => {
                 let index = schedulesP1Days.indexOf(item.day)
-
-                // console.log(item)
-
                 schedulesP1Copy[index].begin = item.begin
                 schedulesP1Copy[index].end = item.end
                 schedulesP1Copy[index].date_beg = new Date(item.date_beg)
@@ -230,26 +237,12 @@ const Screen = (props) => {
 
                 schedulesP2Copy[index].begin = item.begin
                 schedulesP2Copy[index].end = item.end
-                schedulesP2Copy[index].date_beg = new Date(item.date_beg)
-                schedulesP2Copy[index].date_end = new Date(item.date_end)
+                schedulesP2Copy[index].date_beg = item.date_beg == 'undefined' ? undefined : new Date(item.date_beg)
+                schedulesP2Copy[index].date_end = item.date_end == 'undefined' ? undefined : new Date(item.date_end)
             })
 
             setSchedulesP2(schedulesP2Copy)
         }
-    }
-
-    useEffect(() => {
-        // setLoaderVisible(false)
-    }, [])
-
-    const toastMsg = (msg) => {
-        ToastAndroid.showWithGravityAndOffset(
-            msg.toString(),
-            ToastAndroid.SHORT,
-            ToastAndroid.BOTTOM,
-            0,
-            180
-        )
     }
 
     const onChange = (event, selectedDate) => {
@@ -311,21 +304,27 @@ const Screen = (props) => {
             const filteredDays = selectedDaysP1.filter(item => item !== index);
 
             setSelectedDaysP1(filteredDays);
-
+            setSelectedDaysP2(filteredDays);
             // console.log(index)
-            let newSelectedDaysP2 = Array.from(selectedDaysP2)
-            let idxSelP2 = selectedDaysP2.indexOf(index)
 
-            if (idxSelP2 >= 0) {
-                newSelectedDaysP2.splice(idxSelP2, 1)
-                setSelectedDaysP2(newSelectedDaysP2)
-                // console.log(newSelectedDaysP2)
-            }
+
+            // let newSelectedDaysP2 = Array.from(selectedDaysP2)
+            // let idxSelP2 = selectedDaysP2.indexOf(index)
+
+            // if (idxSelP2 >= 0) {
+            //     newSelectedDaysP2.splice(idxSelP2, 1)
+            //     setSelectedDaysP2(newSelectedDaysP2)
+            //     // console.log(newSelectedDaysP2)
+            // }
+
+
+
+
             // console.log('Index de selectedDaysP2')
             // console.log(idx_sel)
         } else {
-            setSelectedDaysP1([ ...selectedDaysP1, index ])
-
+            setSelectedDaysP1([ ...selectedDaysP1, index ]);
+            setSelectedDaysP2([ ...selectedDaysP2, index ]);
             
         }
     }
@@ -387,15 +386,25 @@ const Screen = (props) => {
             return t.every(function (x) { return x.length > 0 })
         }
 
+        function someFieldsFilled(t) {
+            return t.some(function (x) { return x.length > 0 })
+        }
+
         let condP1 = !isEmptyField(daysP1_obj.begin) || !isEmptyField(daysP1_obj.end)
-        let condP2 = filteredDaysP2.length > 0 && (!isEmptyField(daysP2_obj.begin) || !isEmptyField(daysP2_obj.end))
+        // let condP2 = filteredDaysP2.length > 0 && (!isEmptyField(daysP2_obj.begin) || !isEmptyField(daysP2_obj.end))
+        let condP2 = (!isEmptyField(daysP2_obj.begin) || !isEmptyField(daysP2_obj.end)) && (someFieldsFilled(daysP2_obj.begin) || someFieldsFilled(daysP2_obj.end))
 
         if (filteredDaysP1.length < 1) {
             setLoaderVisible(false)
             toastMsg('Selecione os dias de funcionamento.')
-        } else if (condP1 || condP2) {
+        } else if (condP1) {
+        //  else if (condP1 || condP2) {
             setLoaderVisible(false)
             toastMsg('Insira o horário nos campos selecionados.')
+        } else if (condP2) {
+            setLoaderVisible(false)
+            
+            toastMsg('Ao definir pelo menos um horário no 2º período, é preciso definir o restante.')
         } else {
             // console.log('----------------FILTERED_P1----------------')
             // console.log(filteredDaysP1)
@@ -405,8 +414,10 @@ const Screen = (props) => {
             })
 
             filteredDaysP2.map(item => {
-                item.date_beg = new Date(item.date_beg).toISOString()
-                item.date_end = new Date(item.date_end).toISOString()
+                // item.date_beg = new Date(item.date_beg).toISOString()
+                // item.date_end = new Date(item.date_end).toISOString()
+                item.date_beg = item.date_beg == undefined ? 'undefined' : new Date(item.date_beg).toISOString()
+                item.date_end = item.date_end == undefined ? 'undefined' : new Date(item.date_end).toISOString()
             })
 
             // setLoaderVisible(false)
@@ -497,7 +508,7 @@ const Screen = (props) => {
                 // onWillBlur={outScreen}
             />
             <Scroll
-                contentContainerStyle={{ paddingBottom: 80, alignItems: 'center' }}
+                contentContainerStyle={{ paddingBottom: normalize(80), alignItems: 'center' }}
             >
                 <Header>
                     <LeftItem pdLeft='0' >
@@ -545,9 +556,9 @@ const Screen = (props) => {
                                             // console.log(Object.getOwnPropertyNames(item))
                                             setDate(item.date_beg == undefined ? new Date() : new Date(item.date_beg))
                                         }}
-                                        hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                                        hitSlop={{ top: normalize(15), bottom: normalize(15), left: normalize(15), right: normalize(15) }}
                                     >
-                                        <ItemText size={16} color={item.begin.length == 0 ? '#999' : '#000'} >{item.begin.length == 0 ? '00:00' : item.begin}</ItemText>
+                                        <ItemText size={normalize(16)} color={item.begin.length == 0 ? '#999' : '#000'} >{item.begin.length == 0 ? '00:00' : item.begin}</ItemText>
                                         {/* <Input value={date.getHours().toString()} onTouchStart={() => {
                                             Keyboard.dismiss()
                                             showTimePicker()
@@ -569,10 +580,10 @@ const Screen = (props) => {
                                             setDate(item.date_end == undefined ? new Date() : new Date(item.date_end))
                                             // console.log(item.date_end ? newDate.toISOString() : undefined)
                                         }}
-                                        hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                                        hitSlop={{ top: normalize(15), bottom: normalize(15), left: normalize(15), right: normalize(15) }}
                                     >
                                         {/* <Input value={date.getHours().toString()} /> */}
-                                        <ItemText size={16} color={item.end.length == 0 ? '#999' : '#000'} >{item.end.length == 0 ? '00:00' : item.end}</ItemText>
+                                        <ItemText size={normalize(16)} color={item.end.length == 0 ? '#999' : '#000'} >{item.end.length == 0 ? '00:00' : item.end}</ItemText>
                                     </ButtonInput>
                                 </Action>
                             </DoubleAction>
@@ -581,8 +592,8 @@ const Screen = (props) => {
                                 onPress={() => handleCopyAboveP1(index)}
                                 activeOpacity={.7}
                             >
-                                <FontIcon name='long-arrow-alt-up' size={20} color='#999' style={{ right: 2 }} />
-                                <FontIcon name='clone' size={20} color='#999' style={{ left: 2 }} />
+                                <FontIcon name='long-arrow-alt-up' size={normalize(20)} color='#999' style={{ right: normalize(2) }} />
+                                <FontIcon name='clone' size={normalize(20)} color='#999' style={{ left: normalize(2) }} />
                             </ButtonCopy>}
                         </RightItem>
                         
@@ -617,9 +628,10 @@ const Screen = (props) => {
                             //     daysCopy[index].active = !daysCopy[index].active
                             //     setDays(daysCopy)
                             // }}
-                            disabled={!selectedDaysP1.includes(index) ? true : false}
+                            // disabled={!selectedDaysP1.includes(index) ? true : false}
+                            disabled={true}
                             onPress={() => {
-                                handleSelectedDaysP2(index)
+                                // handleSelectedDaysP2(index)
                                 // console.log('After')
                                 // console.log()
                             }}
@@ -629,7 +641,13 @@ const Screen = (props) => {
                             <>
                             <LeftItem>
                                 {/* <BoxSquare></BoxSquare> */}
-                                <BoxSquare selected={selectedDaysP2.includes(index) ? true : false} ></BoxSquare>
+                                {/* <BoxSquare selected={selectedDaysP2.includes(index) ? true : false} ></BoxSquare> */}
+                                <Icon 
+                                    name={selectedDaysP2.includes(index) ? 'check' : 'close'} 
+                                    size={normalize(25)} 
+                                    color='#fe9601' 
+                                    style={{ marginLeft: normalize(5), marginRight: normalize(15) }} 
+                                />
                                 <ItemText>{item.day}</ItemText>
                             </LeftItem>
 
@@ -645,10 +663,10 @@ const Screen = (props) => {
                                                 setSelectedField({ arr_sel: 'schedulesP2', index, prop: 'begin', prop_date: 'date_beg' })
                                                 setDate(item.date_beg == undefined ? new Date() : new Date(item.date_beg))
                                             }}
-                                            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                                            hitSlop={{ top: normalize(15), bottom: normalize(15), left: normalize(15), right: normalize(15) }}
                                         >
                                             {/* <Input value={date.getHours().toString()} /> */}
-                                            <ItemText size={16} color={item.begin.length == 0 ? '#999' : '#000'} >{item.begin.length == 0 ? '00:00' : item.begin}</ItemText>
+                                            <ItemText size={normalize(16)} color={item.begin.length == 0 ? '#999' : '#000'} >{item.begin.length == 0 ? '00:00' : item.begin}</ItemText>
                                         </ButtonInput>
                                     </Action>
                                     <ItemText>às</ItemText>
@@ -662,10 +680,10 @@ const Screen = (props) => {
                                                 setSelectedField({ arr_sel: 'schedulesP2', index, prop: 'end', prop_date: 'date_end' })
                                                 setDate(item.date_end == undefined ? new Date() : new Date(item.date_end))
                                             }}
-                                            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                                            hitSlop={{ top: normalize(15), bottom: normalize(15), left: normalize(15), right: normalize(15) }}
                                         >
                                             {/* <Input value={date.getHours().toString()} /> */}
-                                            <ItemText size={16} color={item.end.length == 0 ? '#999' : '#000'} >{item.end.length == 0 ? '00:00' : item.end}</ItemText>
+                                            <ItemText size={normalize(16)} color={item.end.length == 0 ? '#999' : '#000'} >{item.end.length == 0 ? '00:00' : item.end}</ItemText>
                                         </ButtonInput>
                                     </Action>
                                 </DoubleAction>
@@ -674,8 +692,8 @@ const Screen = (props) => {
                                 <ButtonCopy
                                     onPress={() => handleCopyAboveP2(index)}
                                 >
-                                    <FontIcon name='long-arrow-alt-up' size={20} color='#999' style={{ right: 2 }} />
-                                    <FontIcon name='clone' size={20} color='#999' style={{ left: 2 }} />
+                                    <FontIcon name='long-arrow-alt-up' size={normalize(20)} color='#999' style={{ right: normalize(2) }} />
+                                    <FontIcon name='clone' size={normalize(20)} color='#999' style={{ left: normalize(2) }} />
                                 </ButtonCopy>}
                             </RightItem>
                             {!selectedDaysP1.includes(index) && <OverlayContainer/>}
@@ -685,6 +703,7 @@ const Screen = (props) => {
                 })}
                 <ButtonSave
                     onPress={handleSave}
+                    underlayColor='#e5921a'
                 >
                     <ButtonText>Salvar</ButtonText>
                 </ButtonSave>

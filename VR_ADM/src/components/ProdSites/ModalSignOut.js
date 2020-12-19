@@ -54,6 +54,7 @@ export default (props) => {
 
     let { modalVisible, setModalVisible, goToScreen } = props
 
+
     const toastMsg = (msg) => {
         ToastAndroid.showWithGravityAndOffset(
             msg.toString(),
@@ -67,10 +68,21 @@ export default (props) => {
     const handleSignOut = () => {
         setModalVisible(false)
         setLoaderVisible(true)
-        setTimeout(() => {
+        // setTimeout(() => {
+            // firebase.auth().signOut()
             goToScreen()
-            // setLoaderVisible(false)
-        }, 1500)
+            // firebase.database().ref('cities').child(cityId).child('logged').set(false)
+            // .then(() => {
+            //     setTimeout(() => {
+            //         goToScreen()
+            //     }, 500)
+            // })
+            // .catch(error => {
+            //     setLoaderVisible(false)
+            //     toastMsg(`${error.code} - ${error.message}`)
+            //     console.log(error)
+            // })
+        // }, 1500)
 
         
         // firebase.auth().signOut()

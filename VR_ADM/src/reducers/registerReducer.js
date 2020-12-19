@@ -1,6 +1,7 @@
 const initialState = {
     schedulesP1: [],
     schedulesP2: [],
+    bannerImg: null,
 }
 
 export default (state = initialState, action) => {
@@ -11,6 +12,9 @@ export default (state = initialState, action) => {
             break;
         case 'SET_SCHEDULESP2':
             return {...state, schedulesP2: action.payload.schedulesP2};
+            break;
+        case 'SET_BANNER_IMG':
+            return {...state, bannerImg: action.payload.bannerImg};
             break;
     }
 

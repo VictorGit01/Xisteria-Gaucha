@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useContext, useRef } from 'react'
-import { ToastAndroid, Platform, YellowBox, Dimensions } from 'react-native'
 import { connect } from 'react-redux'
+import { ToastAndroid, Platform, YellowBox, Dimensions, StatusBar } from 'react-native'
+import { NavigationEvents } from 'react-navigation'
+import { normalize } from '../functions'
 import styled from 'styled-components/native'
 import uuid from 'uuid/v4'
 import firebase from '../../firebase'
@@ -14,9 +16,9 @@ import BottomArea from '../components/InfoSnack/BottomArea'
 
 const { height, width } = Dimensions.get('window')
 
-function normalize(size) {
-    return (width + height) / size
-}
+// function normalize(size) {
+//     return (width + height) / size
+// }
 
 const Page = styled.SafeAreaView`
     flex: 1;
@@ -36,45 +38,47 @@ const Input = styled.TextInput`
     height: 40px;
     width: 90%;
     align-self: center;
-    border: 1px solid #ccc;
-    padding: 5px;
+    border: ${normalize(1)}px solid #ccc;
+    padding: ${normalize(5)}px;
 `
 
 const ModalLoading = styled.SafeAreaView`
     flex: 1;
     justify-content: center;
-    background-color: rgba(0, 0, 0, .5)
+    background-color: rgba(0, 0, 0, .5);
 `
 //background-color: rgba(0, 0, 0, .5)
 
 const Title = styled.Text`
-    font-size: ${Platform.Version <= 23 ? 19 : 20}px;
+    font-size: ${Platform.Version <= 23 ? normalize(19) : normalize(20)}px;
     color: #000;
     text-align: center;
 `
 
 const ButtonAddArea = styled.View`
-    height: 80px
+    height: ${normalize(90)}px;
     width: 100%;
     justify-content: center;
     align-items: center;
-    border-top-width: .5px;
+    border-top-width: ${normalize(.5)}px;
     border-color: #999;
     bottom: 0px;
 `
+// height: ${normalize(80)}px
+// height: ${normalize(100)}px
 
-const ButtonAdd = styled.TouchableOpacity`
-    height: 40px;
+const ButtonAdd = styled.TouchableHighlight`
+    height: ${normalize(48)}px;
     width: 90%;
     justify-content: center;
     align-items: center;
     background-color: #fe9601;
-    border-radius: 3px;
+    border-radius: ${normalize(3)}px;
     elevation: 2;
 `
 
 const TextButton = styled.Text`
-    font-size: 18;
+    font-size: ${normalize(18)}px;
     color: #fff;
     text-align: center;
 `
@@ -88,9 +92,17 @@ const Screen = (props) => {
     // //const [ extra, setExtra ] = useState(params.extra)
     const [ amount, setAmount ] = useState(1)
     const [ priceInfo, setPriceInfo ] = useState(price)
+    const [ note, setNote ] = useState('')
     // // const [ itemsOrder, setItemsOrder ] = useContext(ItemsOrderContext)
+    const [ openPlace, setOpenPlace ] = useState(false)
+    const [ statusBarTheme, setStatusBarTheme ] = useState({
+        barStyle: 'light-content',
+        background: '#077a15',
+    })
+
     const sectionListRef = useRef()
 
+    const cities = firebase.database().ref('cities')
     const posts = firebase.database().ref('posts')
     const add_ons = firebase.database().ref('add-ons')
     // const cityId = 'U56Sf1atD5TKSCJzxsKsvIDDlTr2'
@@ -99,7 +111,53 @@ const Screen = (props) => {
     let nav = props.navigation.navigate
     let goBack = props.navigation.goBack
     
-    let { list_request, setListRequest, current_requests, setCurrentRequests, setTotal, cityId } = props
+    let { list_request, setListRequest, current_requests, setCurrentRequests, total, setTotal, cityId } = props
+    
+
+    function onPriceChange(text) {
+        let conv_num = num => isNaN(num) ? 0 : Number(num)
+        // let newText = Number(text)
+        // let cleaned = ('' + text).replace(/[^\d.,]/g, '')
+        let cleaned = ('' + text).replace(/\D/g, '')
+        // let num_format = Number(text).toFixed(2).toString()
+        function afterComma() {
+            let intCleaned = conv_num(parseInt(cleaned))
+            // console.log(intCleaned)
+            let newCleaned = intCleaned.toString()
+            // console.log(intCleaned)
+            if (newCleaned.length === 0) {
+                return '00'
+            } else if (newCleaned.length === 1) {
+                return '0' + newCleaned
+            } else {
+                return newCleaned.slice(-2)
+            }
+        }
+
+        function afterPoint() {
+            let intCleaned = conv_num(parseInt(cleaned))
+            let newCleaned = intCleaned.toString()
+            if (newCleaned.length <= 2) {
+                return '0'
+            } else {
+                return newCleaned.slice(-5, -2)
+            }
+        }
+
+        function beforePoint() {
+            let intCleaned = conv_num(parseInt(cleaned))
+            let newCleaned = intCleaned.toString()
+            if (newCleaned.length >= 6) {
+                return newCleaned.slice(-8, -5) + '.'
+            } else {
+                return ''
+            }
+        }
+
+        let num_format = 'R$ ' + beforePoint() + afterPoint() + ',' + afterComma()
+
+        return num_format
+    }
 
 
     // call this function whenever you want to replace a screen
@@ -113,6 +171,14 @@ const Screen = (props) => {
     //     // params: { locations, position },
     //     });
     // };
+
+    useEffect(() => {
+        cities.child(cityId).on('value', snapshot => {
+            // console.log('---------------LOCAL ABERTO?---------------')
+            // console.log(snapshot.val().open)
+            setOpenPlace(snapshot.val().open)
+        })
+    }, [])
 
     useEffect(() => {
         list_request.map(item => {
@@ -151,13 +217,15 @@ const Screen = (props) => {
         // console.log(props.navigation)
     }, [])
 
+    
+
     function toastMsg(msg) {
         ToastAndroid.showWithGravityAndOffset(
             msg.toString(),
             ToastAndroid.SHORT,
             ToastAndroid.BOTTOM,
             0,
-            180,
+            normalize(280),
         )
     }
 
@@ -167,7 +235,7 @@ const Screen = (props) => {
             sectionIndex: ind,
             itemIndex: 0,
             // viewOffset: -15
-            viewOffset: ind == 0 ? -205 : 0
+            viewOffset: ind == 0 ? normalize(-205) : 0
         })
     }
 
@@ -248,8 +316,8 @@ const Screen = (props) => {
     // }
 
     useEffect(() => {
-        // console.log(amount)
-    }, [amount])
+        console.log(list)
+    }, [list])
 
     const handleSum = () => {
         let sum = amount
@@ -353,102 +421,170 @@ const Screen = (props) => {
     // }, [list])
 
     function handleAdd() {
-        let list_must = list.map((item, index) => {
-            if (item.must && item.must == true) {
-                // if (item == 'undefined' || !item || item == null) {}
-                // console.log(item)
-                return index
-                // toastMsg('Marque itens na seção obrigatória.')
-            }
-            // console.log(item)
-        })
-        // let lis = []
-        // let list_reverse = list_must.reverse()
-        // let list_final = list_reverse.map((item, index) => {
-        //     // if (item == 'undefined' || !item || item == null) { 
-        //     //     // list_reverse.splice(index, 1)
-        //     //     return false
-        //     // }
-        //     // return true
-        //     return item
-        // })
-        // let list_reverse = list_must.reverse().filter(item => {
-        let list_reverse = list_must.filter(item => {
-            if (item == 'undefined' || item == null || isNaN(item)) {
-                return false
-            }
-            return true
-        })
-        // list_reverse.forEach(item => scrollTo(item))
-        let value_index = list_reverse.length > 0 ? list_reverse.reduce(function(a, b) { return (a < b) ? a : b }) : null
-        !isNaN(value_index) && list_must && list_must.length > 0 ? scrollTo(value_index) : null
-        // console.log(value_index)
-        if (list_reverse && list_reverse.length == 0 || !list_reverse) {
-            // let listCopy = Array.from(list)
-            let newListRequest = Array.from(list_request)
-            let newListCurrent = Array.from(current_requests)
-            let objList = {}
-            // let otherList = list.map(itemMap => {
-            //     return itemMap.data.map(item => { if (item.amount > 0) return item })
+        if (openPlace) {
+            // Estava retornando undefined para os itens que estavam fora da condição:
+            // let list_must = list.map((item, index) => {
+            //     if (item.must && item.must == true) {
+            //         // if (item == 'undefined' || !item || item == null) {}
+            //         // console.log(item)
+            //         return index
+            //         // toastMsg('Marque itens na seção obrigatória.')
+            //     }
+            //     // console.log(item)
             // })
 
-            let seen = {}
-            let otherList = []
-            list.filter((entry, index) => {
-                // let previous;
-                // previous = entry.data
-                // otherList = [...otherList, entry.data]
-                entry.data.map(item => {
-                    if (item.amount > 0) {
-                        otherList = [...otherList, item]
+            // Resolvido com a função filter inserida antes de dá um map:
+            // let list_must = list.filter((item, index) => {
+            //     if (item.must && item.must == true) {
+            //         // if (item == 'undefined' || !item || item == null) {}
+            //         // console.log(item)
+            //         return true
+            //         // toastMsg('Marque itens na seção obrigatória.')
+            //     }
+            //     // console.log(item)
+            // }).map((item, index) => index)
+
+            // Encurtando código:
+            let list_must = list.filter((item) => item.must && item.must == true).map((item, index) => index)
+
+
+
+
+
+            // let lis = []
+            // let list_reverse = list_must.reverse()
+            // let list_final = list_reverse.map((item, index) => {
+            //     // if (item == 'undefined' || !item || item == null) { 
+            //     //     // list_reverse.splice(index, 1)
+            //     //     return false
+            //     // }
+            //     // return true
+            //     return item
+            // })
+            // let list_reverse = list_must.reverse().filter(item => {
+            let list_reverse = list_must.filter(item => {
+                if (item == 'undefined' || item == null || isNaN(item)) {
+                    return false
+                }
+                return true
+            })
+            // list_reverse.forEach(item => scrollTo(item))
+            let value_index = list_reverse.length > 0 ? list_reverse.reduce(function(a, b) { return (a < b) ? a : b }) : null
+            console.log('------------VALUE_INDEX------------')
+            console.log(!isNaN(value_index))
+            console.log('------------LIST_MUST------------')
+            console.log(list_must)
+            console.log('------------LIST_MUST.LENGTH------------')
+            console.log(list_must.length)
+            if (!isNaN(value_index) && list_must && list_must.length > 0 ) {
+                scrollTo(value_index)
+                toastMsg('Selecione os itens obrigatórios.')
+                console.log('------------TOTAL EM REQUEST------------')
+                console.log(total)
+            }
+            console.log('=============================================================')
+
+            console.log('------------LIST_REVERSE------------')
+            console.log(list_reverse)
+            console.log('------------LIST_REVERSE.LENGTH------------')
+            console.log(list_reverse)
+            console.log('------------!LIST_REVERSE------------')
+            console.log(!list_reverse)
+
+            // console.log(value_index)
+            if ((list_reverse && list_reverse.length == 0) || !list_reverse) {
+                // let listCopy = Array.from(list)
+                let newListRequest = Array.from(list_request)
+                let newListCurrent = Array.from(current_requests)
+                let objList = {}
+                // let otherList = list.map(itemMap => {
+                //     return itemMap.data.map(item => { if (item.amount > 0) return item })
+                // })
+    
+                console.log('------------NEW_LIST_REQUEST BEFORE------------')
+                console.log(newListRequest)
+    
+                let seen = {}
+                let otherList = []
+                list.filter((entry, index) => {
+                    // let previous;
+                    // previous = entry.data
+                    // otherList = [...otherList, entry.data]
+                    entry.data.map(item => {
+                        if (item.amount > 0) {
+                            otherList = [...otherList, item]
+                        }
+                    })
+                })
+                // otherList[0] 
+                objList.name = params.data.name
+                objList.price = priceInfo.toFixed(2)
+                objList.amount = amount
+                objList.note = note
+                objList.id = uuid()
+                objList.data = otherList
+    
+                let conv_num = num => isNaN(num) ? 0 : Number(num)
+                let calc_price_amount = otherList.reduce((a, b) => {
+                    return a + (conv_num(b.amount) * conv_num(b.price))
+                }, 0)
+                let total_price = calc_price_amount + priceInfo
+    
+                objList.total_price = total_price.toFixed(2)
+    
+                console.log('------------OBJ_LIST------------')
+                console.log(objList)
+                
+                newListCurrent.push(objList)
+                console.log('------------NEW_LIST_CURRENT------------')
+                console.log(newListCurrent)
+    
+                // console.log('------------OBJ_LIST.DATA------------')
+                // console.log(objList.data)
+    
+                setCurrentRequests(newListCurrent)
+    
+                // let indexReq = newListRequest.indexOf(cityId)
+                // console.log(indexReq)
+                // console.log(current_requests)
+    
+                newListRequest.map(item => {
+                    if (item.id == cityId) {
+                        item.data = newListCurrent
                     }
                 })
-            })
-            // otherList[0] 
-            objList.name = params.data.name
-            objList.price = priceInfo
-            objList.amount = amount
-            objList.id = uuid()
-            objList.data = otherList
-
-            let conv_num = num => isNaN(num) ? 0 : Number(num)
-            let calc_price_amount = otherList.reduce((a, b) => {
-                return a + (conv_num(b.amount) * conv_num(b.price))
-            }, 0)
-            let total_price = calc_price_amount + priceInfo
-
-            objList.total_price = total_price
-            
-            newListCurrent.push(objList)
-            setCurrentRequests(newListCurrent)
-
-            // let indexReq = newListRequest.indexOf(cityId)
-            // console.log(indexReq)
-            // console.log(current_requests)
-
-            newListRequest.map(item => {
-                if (item.id == cityId) {
-                    item.data = newListCurrent
-                }
-            })
-
-            setListRequest(newListRequest)
-            console.log('list_request:')
-            console.log(newListRequest)
-            console.log('current_requests:')
-            console.log(newListCurrent)
-            
-            // let tot_req = newListCurrent.reduce((a, b) => { return a + b.total_price }, 0)
-            // setTotal(tot_req)
-            // console.log(params)
-            props.navigation.replace('Request')
-            // replaceScreen('Request')
+    
+                console.log('------------NEW_LIST_REQUEST------------')
+                console.log(newListRequest)
+                setListRequest(newListRequest)
+                
+    
+                // console.log('------------PRICE_INFO------------')
+                // console.log(priceInfo.toFixed(2))
+    
+                // console.log('------------TOTAL_PRICE------------')
+                // console.log(total_price.toFixed(2))
+                // console.log('list_request:')
+                // console.log(newListRequest)
+                // console.log('current_requests:')
+                // console.log(newListCurrent)
+                
+                // let tot_req = newListCurrent.reduce((a, b) => { return a + b.total_price }, 0)
+                // setTotal(tot_req)
+                // console.log(params)
+                props.navigation.replace('Request', { scroll_now: true })
+                // replaceScreen('Request')
+            }
+        } else {
+            toastMsg('Desculpe, mas estamos fechado! Tente novamente mais tarde.')
         }
     }
     
 
     return (
         <Page>
+            {/* <NavigationEvents onWillFocus={changeTheme} /> */}
+            <StatusBar barStyle={statusBarTheme.barStyle} backgroundColor={statusBarTheme.background} />
             {/* <ScrollPage contentContainerStyle={{ paddingBottom: 60 }} > */}
             {/* <TopArea
                 // img={params.img}
@@ -464,6 +600,7 @@ const Screen = (props) => {
             
             {/* {params.stuff && */}
             <BottomArea
+                cityId={cityId}
                 data={params.data}
                 list={list}
                 setList={setList}
@@ -474,6 +611,9 @@ const Screen = (props) => {
                 amount={amount}
                 handleSum={handleSum}
                 handleSub={handleSub}
+                note={note}
+                setNote={setNote}
+                nav={nav}
                 // stuff={params.stuff}
                 // handleAdd={handleAdd}
                 // //active:
@@ -496,7 +636,12 @@ const Screen = (props) => {
             
             {/* </ScrollPage> */}
             <ButtonAddArea>
-                <ButtonAdd onPress={handleAdd} activeOpacity={.9} >
+                <ButtonAdd 
+                    onPress={handleAdd} 
+                    // onPress={() => {}}
+                    underlayColor='#e5921a'
+                    // activeOpacity={.9} 
+                >
                     <TextButton>Adicionar ao pedido</TextButton>
                 </ButtonAdd>
             </ButtonAddArea>
@@ -530,7 +675,9 @@ const mapStateToProps = (state) => {
     return {
         cityId: state.userReducer.cityId,
         list_request: state.requestReducer.list_request,
-        current_requests: state.requestReducer.current_requests
+        current_requests: state.requestReducer.current_requests,
+
+        total: state.requestReducer.total,
     }
 }
 

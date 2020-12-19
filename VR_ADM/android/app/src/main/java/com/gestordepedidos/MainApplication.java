@@ -1,13 +1,13 @@
-package com.vr_adm;
+package com.gestordepedidos;
 
 import android.app.Application;
 import android.content.Context;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
-import com.reactcommunity.rndatetimepicker.RNDateTimePickerPackage;
+import ca.jaysoo.extradimensions.ExtraDimensionsPackage;
 import com.RNFetchBlob.RNFetchBlobPackage;
-import com.oblador.vectoricons.VectorIconsPackage;
-import com.imagepicker.ImagePickerPackage;
+import com.learnium.RNDeviceInfo.RNDeviceInfo;
+import com.thebylito.navigationbarcolor.NavigationBarColorPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;

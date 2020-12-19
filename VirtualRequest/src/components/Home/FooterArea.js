@@ -1,26 +1,30 @@
 import React, { useEffect, useState, useContext } from 'react'
-import { ToastAndroid, Vibration } from 'react-native'
 import { connect } from 'react-redux'
+import { ToastAndroid, Vibration } from 'react-native'
+import { normalize } from '../../functions'
 import styled from 'styled-components/native'
 
 // Contexts:
 import ToTopContext from '../../contexts/ToTopContext'
 
 const BackArea = styled.View`
-    width: 100px;
-    height: 100px;
+    width: ${normalize(100)}px;
+    height: ${normalize(100)}px;
     align-self: flex-end;
     position: absolute;
     bottom: 0px;
-    zIndex: 7px
+    zIndex: ${normalize(7)}px;
 `
 
 const Area = styled.View`
     flex-direction: row;
     width: 100%;
-    height: 40px;
+    height: ${normalize(40)}px;
     background-color: #077a15;
+    border-bottom-width: .5px;
+    border-color: rgba(255, 255, 255, .5);
 `
+// border-color: #444;
 
 const InfoArea = styled.View`
     width: 100%;
@@ -29,37 +33,48 @@ const InfoArea = styled.View`
 `
 
 const TextInfo = styled.Text`
-    font-size: 16px;
+    font-size: ${normalize(16)}px;
     font-weight: ${props => props.weight || 'normal'}
     color: #fff;
 `
 
-const ButtonArea = styled.TouchableOpacity`
-    flex: 1
-    width: 100%
-    height: 100%;
+const ButtonArea = styled.View`
+    width: ${normalize(100)}px;
+    height: ${normalize(100)}px;
     justify-content: center;
     align-items: center;
-    padding-top: 15px
+    align-self: flex-end;
+    position: absolute;
+    bottom: 0px;
+    zIndex: ${normalize(7)}px;
+    padding: ${normalize(10)}px ${normalize(10)}px 0px ${normalize(10)}px;
 `
 /*
 margin-left: 295px;
 margin-top: -50px;
+
+flex: 1
+width: 100%
+height: 100%;
+justify-content: center;
+align-items: center;
+padding-top: ${normalize(15)}px;
+background-color: tomato
 */
 
-const ButtonConfirm = styled.View`
-    width: 60px;
-    height: 60px;
+const ButtonConfirm = styled.TouchableHighlight`
+    width: ${normalize(60)}px;
+    height: ${normalize(60)}px;
     justify-content: center;
     align-items: center;
     background-color: #fe9601;
-    border-radius: 30px;
+    border-radius: ${normalize(30)}px;
     elevation: 2;
 `
 
 const IconButton = styled.Image`
-    width: 20px;
-    height: 20px;
+    width: ${normalize(20)}px;
+    height: ${normalize(20)}px;
 `
 
 const Footer = (props) => {
@@ -95,18 +110,23 @@ const Footer = (props) => {
     }, [current_requests, cityId])
     // }, [current_requests])
 
-    const handleNotif = () => {
+    const toastMsg = (msg) => {
+        ToastAndroid.showWithGravityAndOffset(
+            msg.toString(),
+            ToastAndroid.SHORT,
+            ToastAndroid.BOTTOM,
+            0,
+            normalize(180),
+        )
+    }
+
+    const handleNavToRequest = () => {
         if (totalItems <= 0) {
             Vibration.vibrate(60)
-            ToastAndroid.showWithGravityAndOffset(
-                // 'Adicione produtos ao pedido.',
-                'Adicione itens à sacola.',
-                ToastAndroid.SHORT,
-                ToastAndroid.BOTTOM,
-                0,
-                180
-            )
+            // toastMsg('Adicione produtos ao pedido.'),
+            toastMsg('Adicione itens à sacola.')
         } else {
+            // props.nav('Request')
             props.nav('Request')
             setTop(true)
         }
@@ -114,16 +134,20 @@ const Footer = (props) => {
 
     return (
         <>
-        <BackArea>
-        <ButtonArea
-            onPress={handleNotif}
-            activeOpacity={1}
-        >
-            <ButtonConfirm  >
-                <IconButton source={require('../../assets/icons/done_64px.png')} />
-            </ButtonConfirm>
-        </ButtonArea>
-        </BackArea>
+        {/* <BackArea> */}
+            <ButtonArea
+                // onPress={handleNotif}
+                // activeOpacity={1}
+            >
+                <ButtonConfirm 
+                    onPress={handleNavToRequest}
+                    underlayColor='#e5921a'
+                    hitSlop={{ top: 30, bottom: 30, left: 30, right: 30 }} 
+                >
+                    <IconButton source={require('../../assets/icons/done_64px.png')} />
+                </ButtonConfirm>
+            </ButtonArea>
+        {/* </BackArea> */}
         <Area>
             <InfoArea>
                 {/* <Text>Itens no pedido({totalItems})</Text> */}

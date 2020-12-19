@@ -1,10 +1,13 @@
-package com.virtualrequest;
+package com.xisteriagaucha;
 
 import android.app.Application;
 import android.content.Context;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
-import com.oblador.vectoricons.VectorIconsPackage;
+import ca.jaysoo.extradimensions.ExtraDimensionsPackage;
+import com.rnimmersive.RNImmersivePackage;
+import com.thebylito.navigationbarcolor.NavigationBarColorPackage;
+// import com.afrihost.firebase.notifications.FirebasePushNotificationsPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react'
 import { ToastAndroid } from 'react-native'
+import { normalize } from '../../functions'
 import styled from 'styled-components/native'
 import FontIcon from 'react-native-vector-icons/FontAwesome5'
 import firebase from '../../../firebase'
@@ -18,11 +19,11 @@ const Area = styled.View`
     justify-content: space-between;
     align-items: center;
     background-color: rgba(0, 0, 0, .15)
-    border: 1px solid #999
+    border: ${normalize(1)}px solid #999
     border-bottom-width: 0px;
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
-    padding: 20px 10px 20px 15px;
+    border-top-left-radius: ${normalize(3)}px;
+    border-top-right-radius: ${normalize(3)}px;
+    padding: ${normalize(20)}px ${normalize(10)}px ${normalize(20)}px ${normalize(15)}px;
 `
 // margin-top: 10px
 // height: 50px;
@@ -42,49 +43,53 @@ const RightArea = styled.View`
 `
 
 const Title = styled.Text`
-    font-size: 18px;
+    font-size: ${normalize(18)}px;
 `
 
 const ButtonEdit = styled.TouchableOpacity`
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    margin-left: 20px;
+    margin-left: ${normalize(20)}px;
 `
 // height: 100%;
 // width: auto
 
 const TextSection = styled.Text`
-    font-size: 16px;
+    font-size: ${normalize(16)}px;
     color: ${props => props.color || '#ff2626'};
     text-decoration: ${props => props.decoration || 'none'};
 `
 // margin-horizontal: 15px
 
 export default (props) => {
+    let { section } = props
+
     const [ modalVisible, setModalVisible ] = useState(false)
     const [ quesVisible, setQuesVisible ] = useState(false)
     const [ deleteVisible, setDeleteVisible ] = useState(false)
-    const [ sectionCopy, setSectionCopy ] = useState({})
+    const [ sectionCopy, setSectionCopy ] = useState(section)
     const [ listPosts, setListPosts ] = useState(null)
-    const [ publish, setPublish ] = useState(false)
+    // const [ publish, setPublish ] = useState(false)
     const [ loaderVisible, setLoaderVisible ] = useContext(LoaderContext)
 
-    let { section } = props
 
     const posts = firebase.database().ref('posts')
-    const cityId = firebase.auth().currentUser.uid
+    const currentCity = firebase.auth().currentUser
+    // const cityId = firebase.auth().currentUser.uid
 
     useEffect(() => {
-        // console.log(section)
-        posts.child(cityId).child(section.id).on('value', snapshot => {
-            if (snapshot.val()) {
-                // setPublish(snapshot.val().publish)
-                setSectionCopy(snapshot.val())
-                // console.log(snapshot.val())
-            }
-        })
-    }, [])
+        console.log('----------INICIANDO_SECTION_HEADER----------')
+        console.log(section)
+        // posts.child(cityId).child(section.id).on('value', snapshot => {
+        //     if (snapshot.val()) {
+        //         // setPublish(snapshot.val().publish)
+        //         setSectionCopy(snapshot.val())
+        //         console.log(snapshot.val())
+        //     }
+        // })
+        setSectionCopy(section)
+    }, [section])
 
     const toastMsg = (msg) => {
         ToastAndroid.showWithGravityAndOffset(
@@ -151,13 +156,24 @@ export default (props) => {
     // }, [publish])
     
     const handlePublish = () => {
-        if (section.data.length > 0) {
+        console.log('-----------PUBLISH-----------')
+        if (section.data.length > 0 && currentCity) {
+            const cityId = currentCity.uid
+
             setLoaderVisible(true)
+
+            // let newSectionCopy = JSON.parse(JSON.stringify(sectionCopy))
+            
             setTimeout(() => {
                 // setPublish(!publish)
-                sectionCopy.publish = !sectionCopy.publish
-                setSectionCopy(sectionCopy)
-                posts.child(cityId).child(section.id).child('publish').set(sectionCopy.publish)
+                // sectionCopy.publish = !sectionCopy.publish
+
+                // newSectionCopy.publish = !newSectionCopy.publish
+
+
+                // posts.child(cityId).child(section.id).child('publish').set(sectionCopy.publish)
+                
+                posts.child(cityId).child(section.id).child('publish').set(!sectionCopy.publish)
                 .then(() => {
                     setTimeout(() => {
                         setLoaderVisible(false)
@@ -185,14 +201,14 @@ export default (props) => {
                 <ButtonEdit
                     onPress={handlePublish}
                     activeOpacity={1}
-                    hitSlop={{ top: 15, bottom: 15 }}
+                    hitSlop={{ top: normalize(15), bottom: normalize(15) }}
                 >
-                    <FontIcon name={sectionCopy.publish ? 'pause-circle' : 'play-circle'} size={20} color='#fe9601' />
-                    <TextSection color='#fe9601' style={{ left: 5 }} >{sectionCopy.publish ? 'Pausar' : 'Publicar'}</TextSection>
+                    <FontIcon name={sectionCopy.publish ? 'pause-circle' : 'play-circle'} size={normalize(20)} color='#fe9601' />
+                    <TextSection color='#fe9601' style={{ left: normalize(5) }} >{sectionCopy.publish ? 'Pausar' : 'Publicar'}</TextSection>
                 </ButtonEdit>
-                <ButtonEdit hitSlop={{ top: 15, bottom: 15, left: 30, right: 30 }} activeOpacity={.7} onPress={handleEdit} >
+                <ButtonEdit hitSlop={{ top: normalize(15), bottom: normalize(15), left: normalize(30), right: normalize(30) }} activeOpacity={.7} onPress={handleEdit} >
                     {/* <TextSection decoration='underline' >Editar</TextSection> */}
-                    <FontIcon name='ellipsis-v' size={20} color='#fe9601' />
+                    <FontIcon name='ellipsis-v' size={normalize(20)} color='#fe9601' />
                 </ButtonEdit>
             </RightArea>
             <ModalQuesBox

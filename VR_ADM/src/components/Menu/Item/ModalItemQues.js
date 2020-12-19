@@ -1,5 +1,6 @@
 import React, { useContext } from 'react'
 import { Modal, ToastAndroid } from 'react-native'
+import { normalize } from '../../../functions'
 import styled from 'styled-components/native'
 import FontIcon from 'react-native-vector-icons/FontAwesome5'
 import firebase from '../../../../firebase'
@@ -23,40 +24,40 @@ const ModalBox = styled.TouchableOpacity`
     width: 50%;
     justify-content: space-between;
     background-color: #fff;
-    border-radius: 2px;
-    padding: 15px 0px;
+    border-radius: ${normalize(2)}px;
+    padding: ${normalize(15)}px 0px;
     elevation: 15;
 `
 // height: 20%;
 
-const ModalTitle = styled.Text`
-    font-size: 18px;
-    font-weight: bold;
-`
+// const ModalTitle = styled.Text`
+//     font-size: 18px;
+//     font-weight: bold;
+// `
 
-const ButtonArea = styled.View`
-    height: 40px;
-    width: 110px;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    align-self: flex-end;
-`
+// const ButtonArea = styled.View`
+//     height: 40px;
+//     width: 110px;
+//     flex-direction: row;
+//     justify-content: space-between;
+//     align-items: center;
+//     align-self: flex-end;
+// `
 
 const ModalText = styled.Text`
-    font-size: ${props => props.size ? props.size : 16}px;
+    font-size: ${props => props.size ? props.size : normalize(16)}px;
     font-weight: ${props => props.weight ? props.weight : 'normal'}
     color: ${props => props.color ? props.color : '#000'};
 `
 
 const ModalButton = styled.TouchableHighlight`
-    height: 50px;
+    height: ${normalize(50)}px;
     width: 100%;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    padding-horizontal: 10px;
-    margin-vertical: 5px;
+    padding-horizontal: ${normalize(10)}px;
+    margin-vertical: ${normalize(5)}px;
 `
 
 export default (props) => {
@@ -65,12 +66,13 @@ export default (props) => {
     const posts = firebase.database().ref('posts')
     const add_ons = firebase.database().ref('add-ons')
     const posts_img = firebase.storage().ref().child('posts')
-    const cityId = firebase.auth().currentUser.uid
+    const currentCity = firebase.auth().currentUser
+    // const cityId = firebase.auth().currentUser.uid
 
     let {
         modalVisible, setModalVisible,
         setAddVisible, setDeleteVisible,
-        nav, section, data
+        nav, section, data, dataIndex
     } = props
     let dataCopy = JSON.parse(JSON.stringify(data))
 
@@ -87,10 +89,10 @@ export default (props) => {
     const handleEdit = () => {
         // console.log(data.same)
         setModalVisible(false)
-        nav('InsItemsTab', { editEnabled: true, section, dataId: data.id, dataImg: data.image, dataAddOns: data.add_ons, data })
+        nav('InsItemsTab', { editEnabled: true, section, dataIndex, dataId: data.id, dataImg: data.image, dataAddOns: data.add_ons, data })
     }
 
-    const saveAddOns = () => {
+    const saveAddOns = (cityId) => {
         let id = dataCopy.id
         add_ons.child(cityId).child(data.id).on('value', snapshot => {
             add_ons.child(cityId).child(id).set(snapshot.val())
@@ -107,28 +109,32 @@ export default (props) => {
     }
 
     const savePost = () => {
-        let sectionId = section.id
-        let id = uuid()
-        dataCopy.id = id
-        posts.child(cityId).child(sectionId).child('data').child(id).set(dataCopy)
-        .then(() => {
-            if (data.add_ons) {
-                saveAddOns()
-            } else {
+        if (currentCity) {
+            const cityId = currentCity.uid
+            
+            let sectionId = section.id
+            let id = uuid()
+            dataCopy.id = id
+            posts.child(cityId).child(sectionId).child('data').child(id).set(dataCopy)
+            .then(() => {
+                if (data.add_ons) {
+                    saveAddOns(cityId)
+                } else {
+                    setTimeout(() => {
+                        setLoaderVisible(false)
+                        toastMsg('Item duplicado.')
+                    }, 1500)
+                }
+    
+            })
+            .catch((error) => {
                 setTimeout(() => {
                     setLoaderVisible(false)
-                    toastMsg('Item duplicado.')
+                    console.log(error)
+                    toastMsg(`${error.code} - ${error.message}`)
                 }, 1500)
-            }
-
-        })
-        .catch((error) => {
-            setTimeout(() => {
-                setLoaderVisible(false)
-                console.log(error)
-                toastMsg(`${error.code} - ${error.message}`)
-            }, 1500)
-        })
+            })
+        }
     }
 
     const handleDuplicate = () => {
@@ -219,7 +225,7 @@ export default (props) => {
                     <ModalButton onPress={handleEdit} underlayColor='#eee' >
                         <>
                         <ModalText>Editar</ModalText>
-                        <FontIcon name='edit' size={20} color='#999' />
+                        <FontIcon name='edit' size={normalize(20)} color='#999' />
                         </>
                     </ModalButton>
                     <ModalButton onPress={() => {
@@ -228,7 +234,7 @@ export default (props) => {
                     }} underlayColor='#eee' >
                         <>
                         <ModalText>Excluir</ModalText>
-                        <FontIcon name='trash-alt' size={20} color='#999' />
+                        <FontIcon name='trash-alt' size={normalize(20)} color='#999' />
                         </>
                     </ModalButton>
                     <ModalButton
@@ -237,7 +243,7 @@ export default (props) => {
                     >
                         <>
                         <ModalText>Duplicar</ModalText>
-                        <FontIcon name='clone' size={20} color='#999' />
+                        <FontIcon name='clone' size={normalize(20)} color='#999' />
                         </>
                     </ModalButton>
 

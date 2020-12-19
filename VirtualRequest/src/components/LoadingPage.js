@@ -9,7 +9,6 @@ function normalize(size) {
 }
 
 const Page = styled.SafeAreaView`
-    flex: 1;
     height: ${props => props.height || height + 'px'};
     width: 100%;
     justify-content: center;

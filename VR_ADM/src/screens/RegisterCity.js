@@ -1,22 +1,26 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import { connect } from 'react-redux';
-import { Dimensions, ToastAndroid, Keyboard } from 'react-native';
+import { Dimensions, ToastAndroid, Keyboard, View } from 'react-native';
 import { StackActions, NavigationActions, NavigationEvents } from 'react-navigation';
+import { normalize, insertImage } from '../functions';
 import styled from 'styled-components/native';
 import RNPickerSelect from 'react-native-picker-select';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontIcon from 'react-native-vector-icons/FontAwesome5';
+import AsyncStorage from '@react-native-community/async-storage'
 import ListOfCities from '../ListOfCities';
 import firebase from '../../firebase';
 import axios from 'axios';
+import uuid from 'uuid/v4';
 
 // Contexts:
 import LoaderContext from '../contexts/LoaderContext';
 
 const { height, width } = Dimensions.get('window')
 
-function normalize(size) {
-    return (width + height) / size
-}
+// function normalize(size) {
+//     return (width + height) / size
+// }
 
 const Page = styled.SafeAreaView`
     flex: 1;
@@ -32,11 +36,11 @@ const Section = styled.View`
     width: 100%;
     justify-content: center;
     background-color: rgba(0, 0, 0, .08);
-    padding: 15px;
+    padding: ${normalize(15)}px;
 `
 
 const SectionText = styled.Text`
-    font-size: 17px;
+    font-size: ${normalize(17)}px;
     font-weight: bold;
     color: #000;
 `
@@ -45,15 +49,17 @@ const Item = styled.TouchableOpacity`
     flex-direction: row;
     justify-content: ${props => props.justCont || 'flex-start'};
     align-items: center;
-    padding-vertical: 15px;
-    border-bottom-width: .5px;
+    padding-vertical: ${normalize(15)}px;
+    border-bottom-width: ${normalize(.5)}px;
     border-color: #999;
 `
 
 const ItemArea = styled.View`
-    padding-horizontal: ${normalize(50)}px;
-    padding-bottom: 30px;
+    padding-horizontal: ${normalize(20)}px;
+    padding-bottom: ${normalize(30)}px;
 `
+// padding-horizontal: ${normalize(50)}px;
+// padding-horizontal: ${normalize(22.61)}px;
 
 const LeftItem = styled.View`
     flex: 1;
@@ -62,28 +68,30 @@ const LeftItem = styled.View`
 `
 
 const ItemText = styled.Text`
-    font-size: 16px;
+    font-size: ${normalize(16)}px;
     color: #555;
 `
 
 const BoxExtra = styled.View`
-    height: 20px;
-    width: 20px;
+    height: ${normalize(20)}px;
+    width: ${normalize(20)}px;
     justify-content: center;
     align-items: center;
     background-color: ${props => props.selected ? '#fff' : '#ccc'};
-    border: 5px solid ${props => props.selected ? '#fe9601' : '#ccc'};
-    border-radius: .5px;
-    margin-right: 15px;
-    margin-left: 5px;
+    border: ${normalize(5)}px solid ${props => props.selected ? '#fe9601' : '#ccc'};
+    border-radius: ${normalize(.5)}px;
+    margin-right: ${normalize(15)}px;
+    margin-left: ${normalize(5)}px;
 `
 
 const DoubleAction = styled.View`
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    margin-top: ${normalize(40)}px;
+    margin-top: ${normalize(28)}px;
 `
+// margin-top: ${normalize(40)}px;
+// margin-top: ${normalize(28.27)}px;
 
 const Action = styled.View`
     flex-direction: column;
@@ -91,64 +99,84 @@ const Action = styled.View`
 `
 
 const Title = styled.Text`
-    font-size: ${normalize(63)}px;
+    font-size: ${normalize(18)}px;
     font-weight: bold;
     color: #000;
 `
 
-const InputArea = styled.View`
-    margin-top: ${normalize(150)}px;
-    justify-content: center;
-`
+// const InputArea = styled.View`
+//     margin-top: ${normalize(150)}px;
+//     justify-content: center;
+// `
 
 const Input = styled.TextInput`
-    margin-top: ${normalize(150)}px
-    padding-bottom: ${normalize(230)}px;
-    border-bottom-width: 1px;
+    margin-top: ${normalize(8)}px;
+    padding-bottom: ${normalize(5)}px;
+    border-bottom-width: ${normalize(1)}px;
     border-color: #fe9601;
-    font-size: ${normalize(72)}px;
+    font-size: ${normalize(16)}px;
+`
+// margin-top: ${normalize(150)}px
+// margin-top: ${normalize(7.53)}px
+// padding-bottom: ${normalize(230)}px;
+// padding-bottom: ${normalize(5)}px;
+
+const ButtonVisibility = styled.TouchableOpacity`
+    height: ${normalize(40)}px;
+    width: ${normalize(40)}px;
+    justify-content: center;
+    align-items: center;
+    align-self: flex-end;
+    position: absolute;
 `
 
 const InputSelect = styled.View`
-    border-bottom-width: 1px;
+    border-bottom-width: ${normalize(1)}px;
     border-color: #fe9601;
 `
 
 const ButtonArea = styled.View`
     justify-content: center;
     align-items: center;
-    margin-top: ${normalize(30)}px;
+    margin-top: ${normalize(38)}px;
 `
+// margin-top: ${normalize(30)}px;
+// margin-top: ${normalize(37.69)}px;
 
 const ButtonSignUp = styled.TouchableHighlight`
     width: 90%;
-    height: ${normalize(24)}px;
+    height: ${normalize(48)}px;
     justify-content: center;
     align-items: center;
     background-color: #fe9601;
-    margin-bottom: ${normalize(15)}px;
-    border-radius: 3px;
+    margin-bottom: ${normalize(75)}px;
+    border-radius: ${normalize(3)}px;
 `
+// margin-bottom: ${normalize(15)}px;
+// margin-bottom: ${normalize(75.39)}px;
 
 const ButtonSignIn = styled.TouchableOpacity`
-    height: ${normalize(30)}px;
+    height: ${normalize(38)}px;
     justify-content: center;
     align-items: center;
-    margin: ${normalize(100)}px ${normalize(50)}px;
+    margin: ${normalize(10)}px ${normalize(20)}px;
 `
 
 const ButtonText = styled.Text`
-    font-size: ${normalize(63)}px;
+    font-size: ${normalize(18)}px;
     font-weight: bold;
     color: ${props => props.color || '#fff'};
 `
 
-const CaptionText = styled.Text`
-    font-size: ${normalize(72)}px;
-    color: ${props => props.color || '#999'};
-`
+// const CaptionText = styled.Text`
+//     font-size: ${normalize(72)}px;
+//     color: ${props => props.color || '#999'};
+// `
 
 const Screen = (props) => {
+    const [ token, setToken ] = useState('')
+    const [ deviceId, setDeviceId ] = useState('')
+    const [ prevCityId, setPrevCityId ] = useState('')
     const [ city, setCity ] = useState('')
     const [ email, setEmail ] = useState('')
     const [ district, setDistrict ] = useState('')
@@ -161,22 +189,106 @@ const Screen = (props) => {
     const [ deliveryFee, setDeliveryFee ] = useState('')
     const [ password, setPassword ] = useState('')
     const [ confirmPass, setConfirmPass ] = useState('')
-    const [ maxLenDDD, setMaxLenDDD ] = useState(2)
+    const [ visibility1, setVisibility1 ] = useState(true)
+    const [ visibility2, setVisibility2 ] = useState(true)
+    const [ maxLenDDD1, setMaxLenDDD1 ] = useState(2)
+    const [ maxLenDDD2, setMaxLenDDD2 ] = useState(2)
     const [ maxLenPhone, setMaxLenPhone ] = useState(9)
     const [ count, setCount ] = useState(false)
     const [ listCities, setListCities ] = useState([])
+    const [ listSelectCities, setListSelectCities ] = useState([])
     const [ selectedPay, setSelectedPay ] = useState([])
     const [ selectedDlv, setSelectedDlv ] = useState([])
     const [ selectedCity, setSelectedCity ] = useState({})
+    const [ startMin, setStartMin ] = useState('')
+    const [ finalMin, setFinalMin ] = useState('')
     const [ loaderVisible, setLoaderVisible ] = useContext(LoaderContext)
 
-    const { navigation, schedulesP1, schedulesP2 } = props
+    const { 
+        navigation, 
+        schedulesP1, 
+        schedulesP2, 
+        bannerImg, 
+        setSchedulesP1,
+        setSchedulesP2,
+        setBannerImg,
+    } = props
+    const params = navigation.state.params
     const nav = navigation.navigate
+    const goBack = navigation.goBack
     const payMethods = ['Dinheiro', 'Cartão de crédito']
     const dlvMethods = ['Delivery', 'Retirada no balcão']
 
+    const ref_input2 = useRef()
+    const ref_input3 = useRef()
+    const ref_input4 = useRef()
+    const ref_input5 = useRef()
+    const ref_input6 = useRef()
+    const ref_input7 = useRef()
+    const ref_input8 = useRef()
+    const ref_input9 = useRef()
+    const ref_input10 = useRef()
+    const ref_input11 = useRef()
+    const ref_input12 = useRef()
+    const ref_input13 = useRef()
+    const ref_input14 = useRef()
+    const ref_input15 = useRef()
+    const ref_input16 = useRef()
+    const ref_input17 = useRef()
+
+    const cities = firebase.database().ref('cities')
+
     useEffect(() => {
-        firebase.auth().signOut()
+        // cities.on('value', snapshot => {
+        //     let listCopy = []
+        //     snapshot.forEach(childItem => {
+        //         listCopy.push(childItem.val().selectedCity.index)
+        //     })
+        //     console.log('UseEffect')
+        //     console.log(listCopy)
+        //     setListSelectCities(listCopy)
+        // })
+    }, [])
+
+    function onScreen() {
+        // firebase.auth().signOut()
+        setLoaderVisible(false)
+    }
+
+    useEffect(() => {
+        // alert(`NORMALIZE 30: ${normalize(30)}`)
+        // firebase.auth().signOut()
+        // setLoaderVisible(false)
+        AsyncStorage.getItem('notifToken')
+            .then(t => {
+                if (t) { setToken(t) }
+            })
+
+        AsyncStorage.getItem('deviceId')
+            .then(id => {
+                if (id) { setDeviceId(id) }
+            })
+
+        // AsyncStorage.setItem('cityId', '')
+        // .catch(error => {
+        //     toastMsg(`${error.code} - ${error.message}`)
+        //     console.log(error)
+        // })
+
+        AsyncStorage.getItem('cityId')
+            .then(id => {
+                if (id) { setPrevCityId(id) }
+
+                if (id) { 
+                    console.log('-----------------ID DA CIDADE-----------------')
+                    console.log(id)
+                } else {
+                    console.log('-----------------SEM ID DA CIDADE-----------------')
+                }
+            })
+
+        console.log('-----------------PARAMS-----------------')
+        console.log(params)
     }, [])
 
     useEffect(() => {
@@ -239,6 +351,13 @@ const Screen = (props) => {
         }
 
         fetchData()
+
+        onDlvFeeChange('')
+
+        setSchedulesP1([])
+        setSchedulesP2([])
+        
+        setBannerImg(null)
     }, [])
 
     // useEffect(() => {
@@ -251,9 +370,30 @@ const Screen = (props) => {
     //     console.log(selectedPay)
     // }, [selectedPay])
 
-    const onNumberChange = (text) => {
+    const onNumberChange = (text, setText) => {
         let cleaned = ('' + text).replace(/\D/g, '')
-        setNumber(cleaned)
+        // setNumber(cleaned)
+        setText(cleaned)
+    }
+
+    function onDDDChange(text, setText) {
+        let cleaned = ('' + text).replace(/\D/g, '')
+        setText(cleaned)
+    }
+
+    function dddFocus(text, setDDD, maxLenDDD, setMaxLenDDD) {
+        maxLenDDD == 4 ? setMaxLenDDD(2) : null;
+        let newDDD = text.replace(/\D/g, '');
+        setDDD(newDDD);
+    }
+
+    function dddDefocus(text, setDDD, maxLenDDD, setMaxLenDDD) {
+        maxLenDDD == 2 ? setMaxLenDDD(4) : null;
+
+        if (text.length == 2) {
+            let ajustedDDD = `(${text})`;
+            setDDD(ajustedDDD);
+        }
     }
 
     const onDDD1Change = (text) => {
@@ -280,9 +420,73 @@ const Screen = (props) => {
         // if (cleaned.length == 9) ref_input9.current.focus()
     }
 
-    const onDlvFeeChange = (text) => {
+    function onPhoneChange(text, setText) {
         let cleaned = ('' + text).replace(/\D/g, '')
-        setDeliveryFee(cleaned)
+
+        let part1;
+        let part2;
+        let newText;
+
+        if (cleaned.length <= 4) {
+            setText(cleaned)
+        } else if (cleaned.length > 4 && cleaned.length <= 8) {
+            part1 = cleaned.slice(0, 4);
+            part2 = cleaned.slice(4, 8);
+
+            newText = part1 + '-' + part2;
+            setText(newText)
+        } else if (cleaned.length === 9) {
+            part1 = cleaned.slice(0, 5);
+            part2 = cleaned.slice(5, 9);
+
+            newText = part1 + '-' + part2;
+            setText(newText)
+        }
+    }
+
+    function onDlvFeeChange(text) {
+        let conv_num = num => isNaN(num) ? 0 : Number(num)
+        // let newText = Number(text)
+        // let cleaned = ('' + text).replace(/[^\d.,]/g, '')
+        let cleaned = ('' + text).replace(/\D/g, '')
+        // let num_format = Number(text).toFixed(2).toString()
+        function afterComma() {
+            let intCleaned = conv_num(parseInt(cleaned))
+            console.log(intCleaned)
+            let newCleaned = intCleaned.toString()
+            console.log(intCleaned)
+            if (newCleaned.length === 0) {
+                return '00'
+            } else if (newCleaned.length === 1) {
+                return '0' + newCleaned
+            } else {
+                return newCleaned.slice(-2)
+            }
+        }
+
+        function afterPoint() {
+            let intCleaned = conv_num(parseInt(cleaned))
+            let newCleaned = intCleaned.toString()
+            if (newCleaned.length <= 2) {
+                return '0'
+            } else {
+                return newCleaned.slice(-5, -2)
+            }
+        }
+
+        function beforePoint() {
+            let intCleaned = conv_num(parseInt(cleaned))
+            let newCleaned = intCleaned.toString()
+            if (newCleaned.length >= 6) {
+                return newCleaned.slice(-8, -5) + '.'
+            } else {
+                return ''
+            }
+        }
+
+        let num_format = 'R$ ' + beforePoint() + afterPoint() + ',' + afterComma()
+
+        setDeliveryFee(num_format)
     }
 
     const toastMsg = (msg) => {
@@ -324,86 +528,155 @@ const Screen = (props) => {
         // setEditable(true)
     }
 
+    function handleSetUser(cityId, bannerId) {
+        try {
+            let newDDD1 = ddd1.trim().length > 0 ? ddd1.replace(/\D/g, '') : null
+            let newPhone1 = phone1.trim().length > 0 ? phone1.replace(/\D/g, '') : null
+
+            let newDDD2 = ddd2.trim().length > 0 ? ddd2.replace(/\D/g, '') : null
+            let newPhone2 = phone2.trim().length > 0 ? phone2.replace(/\D/g, '') : null
+
+            let newDlvFee = deliveryFee.split('R$ ').join('').split('.').join('').replace(',', '.')
+
+            const scheduledMin = {
+                startMin,
+                finalMin,
+            }
+
+            const banner = {
+                id: bannerId,
+                image: bannerImg,
+            }
+
+            // let selectedDlvSorted = selectedDlv.sort()
+            // let filteredDlv = selectedDlvSorted.map(item => { return dlvMethods[item] })
+
+            // let selectedPaySorted = selectedPay.sort()
+            // let filteredPay = selectedPaySorted.map(item => { return payMethods[item] })
+
+            cities.child(cityId).set({
+                id: cityId,
+                email,
+                city,
+                district,
+                address,
+                number,
+                ddd1: newDDD1,
+                phone1: newPhone1,
+                ddd2: newDDD2,
+                phone2: newPhone2,
+                deliveryFee: newDlvFee,
+                selectedCity,
+                selectedDlv,
+                selectedPay,
+                scheduledMin,
+                schedulesP1,
+                schedulesP2,
+                banner,
+                open: false,
+            }).then((resp) => {
+                if (prevCityId.length) {
+                    logOutDevice()
+                } else {
+                    addDevice()
+                }
+            }).catch((error) => {
+                handleLoadEd()
+                toastMsg(`${error.code} - ${error.message}`)
+                console.log(error)
+            })
+
+            function logOutDevice() {
+                cities.child(prevCityId).child('devices').child(deviceId).child('logged').set(false)
+                .then(() => {
+                    addDevice()
+                }).catch((error) => {
+                    handleLoadEd()
+                    toastMsg(`${error.code} - ${error.message}`)
+                    console.log(error)
+                })
+            }
+
+            function addDevice() {
+                let newDevice = cities.child(cityId).child('devices').child(deviceId)
+                
+                newDevice.set({
+                    token,
+                    logged: true,
+                })
+                .then(() => {
+                    setTimeout(() => {
+                        // navTo()
+                        saveCityId()
+                    }, 2000)
+                })
+            }
+
+            function saveCityId() {
+                AsyncStorage.setItem('cityId', cityId)
+                    .then(() => {
+                        navTo()        
+                    })
+                    .catch(error => {
+                        toastMsg(`${error.code} - ${error.message}`)
+                        console.log(error)
+                    })
+            }
+
+            function navTo() {
+                if (params && params.enableKey) {
+                    navigation.dispatch(StackActions.reset({
+                        index: 0,
+                        key: 'HomeDrawer',
+                        actions: [
+                            NavigationActions.navigate({routeName: 'HomeDrawer'})
+                        ]
+                    }))
+                } else {
+                    navigation.dispatch(StackActions.reset({
+                        index: 0,
+                        // key: 'HomeDrawer',
+                        actions: [
+                            NavigationActions.navigate({routeName: 'HomeDrawer'})
+                        ]
+                    }))
+                }
+
+                // toastMsg('Cidade cadastrada com sucesso!')
+            }
+        } catch(e) {
+            handleLoadEd()
+            toastMsg(`${e.code} - ${e.message}`)
+            console.log(e)
+        }
+    }
+
+    function handleSaveImg(cityId) {
+        try {
+            const id = uuid()
+
+            insertImage(cityId, id, bannerImg, setLoaderVisible)
+            handleSetUser(cityId, id)
+        } catch(error) {
+            handleLoadEd()
+            console.log(error)
+            toastMsg(`${error.code} - ${error.message}`)
+        }
+    }
+
     const f_Base = () => {
         firebase.auth().createUserWithEmailAndPassword(
             email, password
         ).then((resp) => {
-            let user = firebase.auth().currentUser
+            const user = firebase.auth().currentUser
+
             if (user) {
-                let isCancelled = false
-                let id = user.uid
+                const cityId = user.uid
                 setCount(true)
                 Keyboard.dismiss()
                 
-                async function handleSetUser() {
-                    let cities = await firebase.database().ref('cities')
-                    try {
-                        if (!isCancelled) {
-
-                            let newDDD1 = ddd1.trim().length > 0 ? ddd1.replace(/\D/g, '') : null
-                            let newPhone1 = phone1.trim().length > 0 ? phone1.replace(/\D/g, '') : null
-
-                            let newDDD2 = ddd2.trim().length > 0 ? ddd2.replace(/\D/g, '') : null
-                            let newPhone2 = phone2.trim().length > 0 ? phone2.replace(/\D/g, '') : null
-
-                            // let selectedDlvSorted = selectedDlv.sort()
-                            // let filteredDlv = selectedDlvSorted.map(item => { return dlvMethods[item] })
-
-                            // let selectedPaySorted = selectedPay.sort()
-                            // let filteredPay = selectedPaySorted.map(item => { return payMethods[item] })
-
-                            cities.child(id).set({
-                                id,
-                                email,
-                                city,
-                                district,
-                                address,
-                                number,
-                                ddd1: newDDD1,
-                                phone1: newPhone1,
-                                ddd2: newDDD2,
-                                phone2: newPhone2,
-                                deliveryFee,
-                                selectedCity,
-                                selectedDlv,
-                                selectedPay,
-                                schedulesP1,
-                                schedulesP2,
-                            }).then((resp) => {
-                                setTimeout(() => {
-                                    navigation.dispatch(StackActions.reset({
-                                        index: 0,
-                                        // key: 'HomeDrawer',
-                                        actions: [
-                                            NavigationActions.navigate({routeName: 'HomeDrawer'})
-                                        ]
-                                    }))
-
-                                    toastMsg('Cidade cadastrada com sucesso!')
-                                }, 2000)
-                                
-                            }).catch((error) => {
-                                handleLoadEd()
-                                toastMsg(`${error.code} - ${error.message}`)
-                                console.log(error)
-                            })
-
-                        }
-                    } catch(e) {
-                        if (!isCancelled) {
-                            handleLoadEd()
-                            console.log(e)
-                        }
-                    }
-                }
-
-                handleSetUser()
-
-                return () => {
-                    isCancelled = true
-                }
+                handleSaveImg(cityId)
             }
-    
         })
         .catch((error) => {
             setTimeout(() => {
@@ -430,6 +703,14 @@ const Screen = (props) => {
     }
 
     function handleSignUp() {
+        function registeredCity(index) {
+            return listSelectCities.includes(index)
+        }
+
+        // console.log('Cidade Registrada:')
+        console.log(registeredCity(selectedCity.index))
+        // console.log(selectedCity.index)
+
         function dddOrPhoneEmpty(camp1, camp2) {
             return camp1.trim().length > 0 && camp2.trim().length < 1
         }
@@ -461,6 +742,8 @@ const Screen = (props) => {
         } else if (Object.keys(selectedCity).length == 0 || selectedCity.index == 0) {
             // handleLoadEd()
             toastMsg('Selecione uma cidade.')
+        } else if (registeredCity(selectedCity.index)) {
+            toastMsg('Cidade já cadastrada, escolha outra.')
         } else if (district.trim().length <= 0) {
             toastMsg('Digite o bairro do local.')
         } else if (address.trim().length <= 0) {
@@ -499,11 +782,15 @@ const Screen = (props) => {
         else if (selectedDlv.length == 0) {
             // handleLoadEd()
             toastMsg('Selecione as formas de entrega.')
+        } else if (startMin.length == 0 || finalMin.length == 0) {
+            toastMsg('Defina um tempo estimado de entrega.')
         } else if (selectedPay.length == 0) {
             toastMsg('Selecione as formas de pagamento.')
             // handleLoadEd()
         } else if (!schedulesP1 || schedulesP1.length < 1) {
             toastMsg('Defina os horários de funcionamento.')
+        } else if (!bannerImg) {
+            toastMsg('Insira uma imagem para o banner.')
         } else if (password.trim().length <= 0) {
             toastMsg('Crie uma senha.')
         } else if (confirmPass.trim().length <= 0) {
@@ -524,36 +811,92 @@ const Screen = (props) => {
                 //     handleLoadEd()
                 //     toastMsg('Cidade cadastrada!')
                 // }, 3000)
+
+
+
+                // id,
+                // email,
+                // city,
+                // district,
+                // address,
+                // number,
+                // ddd1: newDDD1,
+                // phone1: newPhone1,
+                // ddd2: newDDD2,
+                // phone2: newPhone2,
+                // deliveryFee,
+                // selectedCity,
+                // selectedDlv,
+                // selectedPay,
+                // schedulesP1,
+                // schedulesP2,
+                // logged: true,
+                // open: false,
+
+                let newDDD1 = ddd1.trim().length > 0 ? ddd1.replace(/\D/g, '') : null
+                let newPhone1 = phone1.trim().length > 0 ? phone1.replace(/\D/g, '') : null
+
+                let newDDD2 = ddd2.trim().length > 0 ? ddd2.replace(/\D/g, '') : null
+                let newPhone2 = phone2.trim().length > 0 ? phone2.replace(/\D/g, '') : null
+
+
+                console.log(`city: ${city}`)
+                console.log(`email: ${email}`)
+                console.log(`district: ${district}`)
+                console.log(`address: ${number}`)
+                console.log(`ddd1: ${newDDD1}`)
+                console.log(`phone1: ${newPhone1}`)
+                console.log(`ddd2: ${newDDD2}`)
+                console.log(`newPhone2: ${newPhone2}`)
+                console.log(`deliveryFee: ${deliveryFee}`)
+                console.log(`selectedCity: ${selectedCity}`)
+                console.log(`selectedDlv: ${selectedDlv}`)
+                console.log(`selectedPay: ${selectedPay}`)
+                console.log(`schedulesP1: ${schedulesP1}`)
+                console.log(`schedulesP2: ${schedulesP2}`)
             }
         }
     }
 
-    // function handleSignUp() {
-    //     // console.log(selectedDlv)
-    //     console.log(selectedPay)
-    // }
-
     function navToLogin() {
-        navigation.dispatch(StackActions.reset({
-            index: 0,
-            actions: [
-                NavigationActions.navigate({routeName: 'Login'})
-            ]
-        }))
+        const fromLogin = params && params.fromLogin ? true : false
+        if (fromLogin) {
+            goBack()
+            console.log('Chamando GoBack')
+        } else {
+            nav('Login')
+        }
+        // navigation.dispatch(StackActions.reset({
+        //     index: 0,
+        //     // key: 'Login',
+        //     actions: [
+        //         NavigationActions.navigate({routeName: 'Login'})
+        //     ]
+        // }))
     }
 
     function onValueChange(value, index) {
-        setSelectedCity({ value, index })
-        setCity(ListOfCities[value].nome)
+        // console.log(listCities[value])
+        // console.log(index)
+        if (listCities[value] == undefined) {
+            setSelectedCity({ value: null, index: 0 })
+            setCity(null)    
+        } else {
+            setSelectedCity({ value, index })
+            setCity(listCities[value].label)
+        }
+        console.log(index)
     }
 
     return (
         <Page>
             <NavigationEvents
-                onWillFocus={() => setLoaderVisible(false)}
+                // onWillFocus={() => setLoaderVisible(false)}
+                onWillFocus={onScreen}
             />
             <Scroll
                 // contentContainerStyle={{ paddingHorizontal: normalize(50) }}
+                contentContainerStyle={{ paddingBottom: normalize(80) }}
                 keyboardShouldPersistTaps='handled'
             >
 
@@ -562,7 +905,8 @@ const Screen = (props) => {
                 </Section>
                 <ItemArea>
                     <Action
-                        style={{ marginTop: normalize(40) }}
+                        // style={{ marginTop: normalize(40) }}
+                        style={{ marginTop: normalize(28) }}
                     >
                         <Title>E-mail:</Title>
                         <Input
@@ -573,15 +917,16 @@ const Screen = (props) => {
                             autoCapitalize='none'
                             returnKeyType='next'
                             // editable={editable}
-                            // onSubmitEditing={() => ref_input3.current.focus()}
-                            // ref={ref_input2}
+                            onSubmitEditing={() => ref_input3.current.focus()}
+                            ref={ref_input2}
                             blurOnSubmit={false}
                             placeholderTextColor='#999'
                         />
                     </Action>
 
                     <DoubleAction
-                        style={{ marginTop: normalize(40) }}
+                        // style={{ marginTop: normalize(40) }}
+                        style={{ marginTop: normalize(28) }}
                     >
                         <Action width='46%' >
                             <Title>Nome da cidade:</Title>
@@ -593,9 +938,12 @@ const Screen = (props) => {
                                     // onValueChange={() => {}}
                                     style={{
                                         inputAndroid: {
-                                            paddingBottom: normalize(230),
-                                            marginTop: normalize(150),
-                                            fontSize: normalize(72)
+                                            // paddingBottom: normalize(230),
+                                            paddingBottom: normalize(5),
+                                            // marginTop: normalize(150),
+                                            marginTop: normalize(8),
+                                            // fontSize: normalize(72)
+                                            fontSize: normalize(16)
                                         },
                                         placeholder: {
                                             color: '#999'
@@ -616,8 +964,8 @@ const Screen = (props) => {
                                 onChangeText={(t) => setDistrict(t)}
                                 returnKeyType='next'
                                 // editable={editable}
-                                // onSubmitEditing={() => ref_input5.current.focus()}
-                                // ref={ref_input4}
+                                onSubmitEditing={() => ref_input4.current.focus()}
+                                ref={ref_input3}
                                 blurOnSubmit={false}
                                 placeholderTextColor='#999'
                             />
@@ -633,8 +981,8 @@ const Screen = (props) => {
                                 placeholder='Rua/Avenida'
                                 returnKeyType='next'
                                 // editable={editable}
-                                // onSubmitEditing={() => ref_input6.current.focus()}
-                                // ref={ref_input5}
+                                onSubmitEditing={() => ref_input5.current.focus()}
+                                ref={ref_input4}
                                 blurOnSubmit={false}
                                 placeholderTextColor='#999'
                             />
@@ -643,12 +991,12 @@ const Screen = (props) => {
                             <Title>Nº:</Title>
                             <Input
                                 value={number}
-                                onChangeText={onNumberChange}
+                                onChangeText={text => onNumberChange(text, setNumber)}
                                 keyboardType='numeric'
                                 returnKeyType='next'
                                 // editable={editable}
-                                // onSubmitEditing={() => ref_input7.current.focus()}
-                                // ref={ref_input6}
+                                onSubmitEditing={() => ref_input6.current.focus()}
+                                ref={ref_input5}
                                 blurOnSubmit={false}
                                 placeholderTextColor='#999'
                             />
@@ -661,23 +1009,25 @@ const Screen = (props) => {
                 </Section>
                 <ItemArea>
                     <DoubleAction
-                        style={{ marginTop: normalize(40) }}
+                        // style={{ marginTop: normalize(40) }}
+                        style={{ marginTop: normalize(28) }}
                     >
                         <Action width='20%' >
                             <Title>DDD:</Title>
                             <Input
                                 value={ddd1}
-                                onChangeText={onDDD1Change}
+                                // onChangeText={onDDD1Change}
+                                onChangeText={text => onDDDChange(text, setDDD1)}
                                 placeholder='(00)'
                                 keyboardType='phone-pad'
-                                maxLength={maxLenDDD}
+                                maxLength={maxLenDDD1}
                                 returnKeyType='next'
                                 // editable={editable}
-                                // onFocus={dddFocus}
-                                // onSubmitEditing={() => ref_input8.current.focus()}
-                                // ref={ref_input7}
+                                onFocus={() => dddFocus(ddd1, setDDD1, maxLenDDD1, setMaxLenDDD1)}
+                                onSubmitEditing={() => ref_input7.current.focus()}
+                                ref={ref_input6}
                                 blurOnSubmit={false}
-                                // onBlur={dddDefocus}
+                                onBlur={() => dddDefocus(ddd1, setDDD1, maxLenDDD1, setMaxLenDDD1)}
                                 placeholderTextColor='#999'
                             />
                         </Action>
@@ -685,15 +1035,17 @@ const Screen = (props) => {
                             <Title>Telefone:</Title>
                             <Input
                                 value={phone1}
-                                onChangeText={onPhone1Change}
+                                // onChangeText={onPhone1Change}
+                                onChangeText={text => onPhoneChange(text, setPhone1)}
                                 placeholder='0000-0000'
                                 keyboardType='phone-pad'
-                                maxLength={maxLenPhone}
+                                // maxLength={maxLenPhone}
+                                maxLength={10}
                                 returnKeyType='next'
                                 // editable={editable}
                                 // onFocus={phone1Focus}
-                                // onSubmitEditing={() => ref_input9.current.focus()}
-                                // ref={ref_input8}
+                                onSubmitEditing={() => ref_input8.current.focus()}
+                                ref={ref_input7}
                                 blurOnSubmit={false}
                                 // onBlur={phone1Defocus}
                                 placeholderTextColor='#999'
@@ -703,22 +1055,24 @@ const Screen = (props) => {
 
                     <DoubleAction
                         // style={{ marginTop: normalize(40) }}
+                        style={{ marginTop: normalize(28) }}
                     >
                         <Action width='20%' >
                             <Title>DDD:</Title>
                             <Input
                                 value={ddd2}
-                                onChangeText={onDDD2Change}
+                                // onChangeText={onDDD2Change}
+                                onChangeText={text => onDDDChange(text, setDDD2)}
                                 placeholder='(00)'
                                 keyboardType='phone-pad'
-                                maxLength={maxLenDDD}
+                                maxLength={maxLenDDD2}
                                 returnKeyType='next'
                                 // editable={editable}
-                                // onFocus={dddFocus}
-                                // onSubmitEditing={() => ref_input8.current.focus()}
-                                // ref={ref_input7}
+                                onFocus={() => dddFocus(ddd2, setDDD2, maxLenDDD2, setMaxLenDDD2)}
+                                onSubmitEditing={() => ref_input9.current.focus()}
+                                ref={ref_input8}
                                 blurOnSubmit={false}
-                                // onBlur={dddDefocus}
+                                onBlur={() => dddDefocus(ddd2, setDDD2, maxLenDDD2, setMaxLenDDD2)}
                                 placeholderTextColor='#999'
                             />
                         </Action>
@@ -726,15 +1080,17 @@ const Screen = (props) => {
                             <Title>Telefone:</Title>
                             <Input
                                 value={phone2}
-                                onChangeText={onPhone2Change}
+                                // onChangeText={onPhone2Change}
+                                onChangeText={text => onPhoneChange(text, setPhone2)}
                                 placeholder='0000-0000'
                                 keyboardType='phone-pad'
-                                maxLength={maxLenPhone}
+                                // maxLength={maxLenPhone}
+                                maxLength={10}
                                 returnKeyType='next'
                                 // editable={editable}
                                 // onFocus={phoneFocus}
-                                // onSubmitEditing={() => ref_input9.current.focus()}
-                                // ref={ref_input8}
+                                onSubmitEditing={() => ref_input10.current.focus()}
+                                ref={ref_input9}
                                 blurOnSubmit={false}
                                 // onBlur={phoneDefocus}
                                 placeholderTextColor='#999'
@@ -748,14 +1104,20 @@ const Screen = (props) => {
                 </Section>
                 <ItemArea>
                     <Action
-                        style={{ marginTop: normalize(50) }}
+                        // style={{ marginTop: normalize(50) }}
+                        style={{ marginTop: normalize(20) }}
                     >
                         <Title>Valor da taxa:</Title>
                         <Input
                             value={deliveryFee}
                             onChangeText={onDlvFeeChange}
-                            placeholder='R$ 0,00'
+                            // placeholder='R$ 0,00'
                             keyboardType='numeric'
+                            maxLength={13}
+                            returnKeyType='next'
+                            onSubmitEditing={() => ref_input11.current.focus()}
+                            ref={ref_input10}
+                            blurOnSubmit={false}
                         />
                     </Action>
                 </ItemArea>
@@ -776,10 +1138,52 @@ const Screen = (props) => {
                                     <BoxExtra selected={selectedDlv.includes(index) ? true : false} ></BoxExtra>
                                     <ItemText>{item}</ItemText>
                                 </LeftItem>
-                                <FontIcon name={index === 0 ? 'motorcycle' : 'store'} size={20} color='#077a15' />
+                                <FontIcon name={index === 0 ? 'motorcycle' : 'store'} size={normalize(20)} color='#077a15' />
                             </Item>
                         ))}
                     </Action>
+                </ItemArea>
+
+                <Section>
+                    <SectionText>Tempo de espera para entrega</SectionText>
+                </Section>
+                <ItemArea style={{ paddingBottom: 0 }} >
+                    <DoubleAction style={{ marginTop: 0, marginBottom: normalize(20), alignItems: 'flex-end' }} >
+                        <Action width='30%'>
+                            <Input
+                                value={startMin}
+                                // onChangeText={t => setStartMin(t)}
+                                onChangeText={text => onNumberChange(text, setStartMin)}
+                                style={{ textAlign: 'center' }}
+                                placeholder='00'
+                                keyboardType='numeric'
+                                returnKeyType='next'
+                                onSubmitEditing={() => ref_input12.current.focus()}
+                                ref={ref_input11}
+                                blurOnSubmit={false}
+                            />
+                        </Action>
+
+                        <ItemText>a</ItemText>
+
+                        <Action width='30%'>
+                            <Input
+                                value={finalMin}
+                                // onChangeText={t => setFinalMin(t)}
+                                onChangeText={text => onNumberChange(text, setFinalMin)}
+                                style={{ textAlign: 'center' }}
+                                placeholder='00'
+                                keyboardType='numeric'
+                                // ref={ref_input11}
+                                returnKeyType='next'
+                                onSubmitEditing={() => ref_input13.current.focus()}
+                                ref={ref_input12}
+                                blurOnSubmit={false}
+                            />
+                        </Action>
+
+                        <ItemText>min</ItemText>
+                    </DoubleAction>
                 </ItemArea>
 
                 <Section>
@@ -788,6 +1192,7 @@ const Screen = (props) => {
                 <ItemArea style={{ paddingBottom: 0, borderColor: '#999' }} >
                     <Action
                         // style={{ marginTop: normalize(50) }}
+                        // style={{ marginTop: normalize(20) }}
                     >
                         {payMethods.map((item, index) => (
                             <Item
@@ -800,7 +1205,7 @@ const Screen = (props) => {
                                     <BoxExtra selected={selectedPay.includes(index) ? true : false} ></BoxExtra>
                                     <ItemText>{item}</ItemText>
                                 </LeftItem>
-                                <FontIcon name={index === 0 ? 'money-bill-wave' : 'credit-card'} size={20} color='#077a15' />
+                                <FontIcon name={index === 0 ? 'money-bill-wave' : 'credit-card'} size={normalize(20)} color='#077a15' />
                             </Item>
                         ))}
                     </Action>
@@ -812,14 +1217,34 @@ const Screen = (props) => {
                 <ItemArea style={{ paddingBottom: 0 }} >
                     <Action>
                         <Item
+                            activeOpacity={.7}
                             onPress={() => nav('CreateOpenHours')}
-                            style={{ borderBottomWidth: 0, paddingVertical: 20 }}
+                            style={{ borderBottomWidth: 0, paddingVertical: normalize(20) }}
                         >
                             <LeftItem>
                                 <ItemText>Horário { schedulesP1.length > 0 ? 'definido' : 'indefinido'}</ItemText>
                             </LeftItem>
-                            <FontIcon name='clock' size={20} color={schedulesP1.length > 0 ? '#077a15' : '#ff2626'} style={{ right: 10 }} />
-                            <FontIcon name='chevron-right' size={15} color='#999' />
+                            <FontIcon name='clock' size={normalize(20)} color={schedulesP1.length > 0 ? '#077a15' : '#ccc'} style={{ right: normalize(10) }} />
+                            <FontIcon name='chevron-right' size={normalize(15)} color='#999' />
+                        </Item>
+                    </Action>
+                </ItemArea>
+
+                <Section>
+                    <SectionText>Inserir banner</SectionText>
+                </Section>
+                <ItemArea style={{ paddingBottom: 0 }} >
+                    <Action>
+                        <Item
+                            activeOpacity={.7}
+                            onPress={() => nav('CreateBanners')}
+                            style={{ borderBottomWidth: 0, paddingVertical: normalize(20) }}
+                        >
+                            <LeftItem>
+                                <ItemText>Banner { bannerImg ? 'inserido' : 'não inserido'}</ItemText>
+                            </LeftItem>
+                            <FontIcon name='image' size={normalize(20)} color={bannerImg ? '#077a15' : '#ccc'} style={{ right: normalize(10) }} />
+                            <FontIcon name='chevron-right' size={normalize(15)} color='#999' />
                         </Item>
                     </Action>
                 </ItemArea>
@@ -829,39 +1254,70 @@ const Screen = (props) => {
                 </Section>
                 <ItemArea>
                     <Action
-                        style={{ marginTop: normalize(40) }}
+                        // style={{ marginTop: normalize(40) }}
+                        style={{ marginTop: normalize(28) }}
                     >
                         <Title>Digite uma senha:</Title>
-                        <Input
-                            value={password}
-                            onChangeText={(t) => setPassword(t)}
-                            autoCapitalize='none'
-                        />
+                        <View>
+                            <Input
+                                value={password}
+                                onChangeText={(t) => setPassword(t)}
+                                autoCapitalize='none'
+                                returnKeyType='next'
+                                secureTextEntry={visibility1}
+                                onSubmitEditing={() => ref_input14.current.focus()}
+                                ref={ref_input13}
+                                blurOnSubmit={false}
+                            />
+                            <ButtonVisibility
+                                activeOpacity={1}
+                                onPress={() => setVisibility1(!visibility1)}
+                                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                            >
+                                <Icon name={visibility1 ? 'visibility' : 'visibility-off'} size={normalize(20)} color='#000' />
+                            </ButtonVisibility>
+                        </View>
                     </Action>
 
                     <Action
-                        style={{ marginTop: normalize(40) }}
+                        // style={{ marginTop: normalize(40) }}
+                        style={{ marginTop: normalize(28) }}
                     >
                         <Title>Confirme a senha:</Title>
-                        <Input
-                            value={confirmPass}
-                            onChangeText={(t) => setConfirmPass(t)}
-                            autoCapitalize='none'
-                        />
+                        <View>
+                            <Input
+                                value={confirmPass}
+                                onChangeText={(t) => setConfirmPass(t)}
+                                autoCapitalize='none'
+                                returnKeyType='done'
+                                secureTextEntry={visibility2}
+                                ref={ref_input14}
+                            />
+                            <ButtonVisibility
+                                activeOpacity={1}
+                                onPress={() => setVisibility2(!visibility2)}
+                                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                            >
+                                <Icon name={visibility2 ? 'visibility' : 'visibility-off'} size={normalize(20)} color='#000' />
+                            </ButtonVisibility>
+                        </View>
                     </Action>
                 </ItemArea>
 
                 <ButtonArea>
-                    <ButtonSignUp onPress={handleSignUp} >
+                    <ButtonSignUp 
+                        onPress={handleSignUp} 
+                        underlayColor='#e5921a'
+                    >
                         <ButtonText>Cadastrar</ButtonText>
                     </ButtonSignUp>
-                    <ButtonSignIn
+                    {/* <ButtonSignIn
                         onPress={navToLogin}
                         activeOpacity={.7}
                         hitSlop={{ top: 30, bottom: 30, left: 30, right: 30 }}
                     >
                         <CaptionText>Local com conta existente? <CaptionText color='#000' >Login</CaptionText></CaptionText>
-                    </ButtonSignIn>
+                    </ButtonSignIn> */}
                 </ButtonArea>
             </Scroll>
         </Page>
@@ -880,9 +1336,18 @@ const mapStateToProps = (state) => {
     return {
         schedulesP1: state.registerReducer.schedulesP1,
         schedulesP2: state.registerReducer.schedulesP2,
+        bannerImg: state.registerReducer.bannerImg,
     }
 }
 
-export default connect(mapStateToProps)(Screen);
+const mapDispatchToProps = (dispatch) => {
+    return {
+        setSchedulesP1: (schedulesP1) => dispatch({type: 'SET_SCHEDULESP1', payload: {schedulesP1}}),
+        setSchedulesP2: (schedulesP2) => dispatch({type: 'SET_SCHEDULESP2', payload: {schedulesP2}}),
+        setBannerImg: (bannerImg) => dispatch({type: 'SET_BANNER_IMG', payload: {bannerImg}}),
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Screen);
 
 // Local com conta existente?

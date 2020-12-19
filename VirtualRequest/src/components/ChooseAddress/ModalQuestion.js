@@ -1,6 +1,12 @@
-import React from 'react'
-import { Modal } from 'react-native'
+import React, { useEffect } from 'react'
+import { Dimensions, Platform, BackHandler } from 'react-native'
+import Modal from 'react-native-modal'
+import { normalize } from '../../functions'
 import styled from 'styled-components/native'
+const deviceWidth = Dimensions.get('window').width
+const deviceHeight = Platform.OS === 'ios'
+    ? Dimensions.get('window').height
+    : require('react-native-extra-dimensions-android').get('REAL_WINDOW_HEIGHT')
 
 const ModalArea = styled.TouchableOpacity`
     flex: 1;
@@ -26,7 +32,6 @@ const ModalTitle = styled.Text`
 
 const ButtonArea = styled.View`
     height: 40px;
-    
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
@@ -46,13 +51,27 @@ const ModalButton = styled.TouchableHighlight`
     height: 35px;
     justify-content: center;
     align-items: center;
-    
     padding-horizontal: 10px;
 `
 // width: 50px;
 
 export default (props) => {
     let { modalVisible, setModalVisible, selectAddress, itemChos, idxChos, pop } = props
+
+    useEffect(() => {
+        BackHandler.addEventListener('hardwareBackPress', onBack)
+        return () => {
+            BackHandler.removeEventListener('hardwareBackPress', onBack)
+        }
+    }, [modalVisible])
+
+    function onBack() {
+        if (modalVisible) {
+            setModalVisible(false)
+            return true
+        }
+        return false
+    }
 
     function handleConfirm() {
         selectAddress(itemChos, idxChos)
@@ -62,10 +81,27 @@ export default (props) => {
 
     return (
         <Modal
-            visible={modalVisible}
-            animationType='fade'
-            transparent={true}
-            onRequestClose={() => setModalVisible(false)}
+            // visible={modalVisible}
+            // animationType='fade'
+            // transparent={true}
+            // onRequestClose={() => setModalVisible(false)}
+
+            isVisible={modalVisible}
+            backdropOpacity={0.9}
+            // backdropColor='rgba(0, 0, 0, .5)'
+            backdropColor='transparent'
+            animationIn='fadeIn'
+            animationOut='fadeOut'
+            coverScreen={false}
+            // deviceHeight={Dimensions.get('screen').height}
+            deviceWidth={deviceWidth}
+            deviceHeight={deviceHeight}
+            style={{ justifyContent: 'center', alignItems: 'center', margin: 0 }}
+            // onBackdropPress={() => props.setModalVisible(false)}
+            // animationInTiming={300}
+            // // animationOutTiming={500}
+            // backdropTransitionOutTiming={300}
+            hideModalContentWhileAnimating={true}  
         >
             <ModalArea onPress={() => setModalVisible(false)} activeOpacity={1} >
                 <ModalBox activeOpacity={1} >

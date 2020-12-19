@@ -1,9 +1,16 @@
 import React from 'react'
-import { Modal, StatusBar } from 'react-native'
+// import { Modal, StatusBar } from 'react-native'
+import { Dimensions, Platform } from 'react-native'
+import Modal from 'react-native-modal'
 import styled from 'styled-components/native'
+const deviceWidth = Dimensions.get('window').width
+const deviceHeight = Platform.OS === 'ios'
+    ? Dimensions.get('window').height
+    : require('react-native-extra-dimensions-android').get('REAL_WINDOW_HEIGHT')
 
 const ModalArea = styled.TouchableOpacity`
     flex: 1;
+    width: 100%;
     justify-content: center;
     align-items: center;
     background-color: rgba(0, 0, 0, .5);
@@ -49,10 +56,26 @@ const ModalButton = styled.TouchableHighlight`
 export default (props) => {
     return (
         <Modal
-            visible={props.modalVisible}
-            animationType='fade'
-            transparent={true}
-            onRequestClose={() => props.setModalVisible(false)}
+            // visible={props.modalVisible}
+            // animationType='fade'
+            // transparent={true}
+            // onRequestClose={() => props.setModalVisible(false)}
+            isVisible={props.modalVisible}
+            backdropOpacity={0.9}
+            // backdropColor='rgba(0, 0, 0, .5)'
+            backdropColor='transparent'
+            animationIn='fadeIn'
+            animationOut='fadeOut'
+            coverScreen={false}
+            // deviceHeight={Dimensions.get('screen').height}
+            deviceWidth={deviceWidth}
+            deviceHeight={deviceHeight}
+            style={{ justifyContent: 'center', alignItems: 'center', margin: 0 }}
+            // onBackdropPress={() => props.setModalVisible(false)}
+            // animationInTiming={300}
+            // // animationOutTiming={500}
+            // backdropTransitionOutTiming={300}
+            hideModalContentWhileAnimating={true}
         >
             {/* <StatusBar barStyle='light-content' backgroundColor={props.modalVisible ? 'rgb(3, 61, 10)' : '#077a15'} /> */}
             <ModalArea onPress={() => props.setModalVisible(false)} activeOpacity={1} >

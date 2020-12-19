@@ -1,20 +1,22 @@
-import React, { useEffect, useState, useContext } from 'react'
+import React, { useEffect, useState, useContext, useRef } from 'react'
 import { Dimensions, ToastAndroid, Keyboard } from 'react-native'
 import { StackActions, NavigationActions, NavigationEvents } from 'react-navigation'
+import { normalize } from '../functions'
 import styled from 'styled-components/native'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 import firebase from '../../firebase'
 import NetInfo from '@react-native-community/netinfo'
-import axios from 'axios'
+import AsyncStorage from '@react-native-community/async-storage'
+import uuid from 'uuid/v4'
 
 // Contexts:
 import LoaderContext from '../contexts/LoaderContext'
 
 const { height, width } = Dimensions.get('window')
 
-function normalize(size) {
-    return (width + height) / size
-}
+// function normalize(size) {
+//     return (width + height) / size
+// }
 
 const Page = styled.SafeAreaView`
     flex: 1;
@@ -37,15 +39,18 @@ const Header = styled.View`
 
 const Footer = styled.View`
     width: 100%
-    padding: ${normalize(100)}px ${normalize(50)}px;
+    padding: ${normalize(10)}px ${normalize(20)}px;
     
 `
 // margin-bottom: ${normalize(56.5)}px;
+// padding: ${normalize(100)}px ${normalize(50)}px;
+// padding: ${normalize(11.30)}px ${normalize(22.61)}px;
 
 const Title = styled.Text`
-    font-size: ${props => props.size || normalize(63)}px;
+    font-size: ${props => props.size || normalize(18)}px;
     font-weight: bold;
     color: ${props => props.color || '#000'};
+    letter-spacing: ${props => props.ltrSpacing || 0}px;
 `
 // font-size: 18px;
 
@@ -55,23 +60,25 @@ const Action = styled.View`
 `
 
 const InputArea = styled.View`
-    margin-top: ${normalize(150)}px;
+    margin-top: ${normalize(8)}px;
     justify-content: center;
 `
+// margin-top: ${normalize(150)}px;
+// margin-top: ${normalize(7.53)}px;
 
 const Input = styled.TextInput`
     padding-vertical: 0px;
-    padding-bottom: ${normalize(230)}px;
-    margin-top: ${normalize(100)}px;
-    border-bottom-width: 1px;
+    padding-bottom: ${normalize(5)}px;
+    margin-top: ${normalize(10)}px;
+    border-bottom-width: ${normalize(1)}px;
     border-color: #077a15;
-    font-size: ${normalize(72)}px;
+    font-size: ${normalize(16)}px;
 `
 // padding-bottom: 5px;
 
 const ButtonVisibility = styled.TouchableOpacity`
-    height: 40px;
-    width: 40px;
+    height: ${normalize(40)}px;
+    width: ${normalize(40)}px;
     justify-content: center;
     align-items: center;
     align-self: flex-end;
@@ -82,37 +89,80 @@ const ButtonArea = styled.View`
     width: 100%
     justify-content: center;
     align-items: center;
-    margin-top: 30px;
+    margin-top: ${normalize(30)}px;
 `
 
 const ButtonSignIn = styled.TouchableHighlight`
     width: 100%;
-    height: ${normalize(24)}px
+    height: ${normalize(48)}px;
+    justify-content: center;
+    align-items: center;
+    background-color: #077a15;
+    border-radius: ${normalize(3)}px;
+    margin-vertical: ${normalize(20)}px;
+`
+// border: 1px solid #077a15;
+// background-color: #fff;
+// height: ${normalize(24)}px;
+// margin-bottom: ${normalize(20)}px;
+
+const ButtonSignUp = styled.TouchableHighlight`
+    width: 100%;
+    height: ${normalize(48)}px;
     justify-content: center;
     align-items: center;
     background-color: #fff;
-    border: 1px solid #077a15
-    border-radius: 3px;
+    border: ${normalize(1)}px solid #077a15;
+    border-radius: ${normalize(3)}px;
 `
 
 const ButtonText = styled.Text`
-    font-size: ${normalize(63)}px;
+    font-size: ${normalize(18)}px;
     font-weight: bold;
     color: ${props => props.color || '#077a15'};
 `
 
 const Screen = (props) => {
+    const [ snapExist, setSnapExist ] = useState('')
+    const [ deviceId, setDeviceId ] = useState('')
+    const [ token, setToken ] = useState('')
     const [ email, setEmail ] = useState('')
     const [ password, setPassword ] = useState('')
-    const [ visibility1, setVisibility1 ] = useState(false)
+    const [ visibility, setvisibility ] = useState(true)
     const [ editable, setEditable ] = useState(true)
     const [ loaderVisible, setLoaderVisible ] = useContext(LoaderContext)
 
-    let { navigation } = props
+    const { navigation } = props
+    const nav = navigation.navigate
+
+    const ref_input2 = useRef()
 
     useEffect(() => {
-        firebase.auth().signOut()
+        // firebase.auth().signOut()
+        // alert(`NORMALIZE 40: ${normalize(40)}`)
+
+        AsyncStorage.getItem('notifToken')
+            .then(t => {
+                if (t) { setToken(t) }
+            })
+
+        AsyncStorage.getItem('deviceId')
+            .then(id => {
+                // if (!id) {
+                //     let newId = uuid()
+
+                //     AsyncStorage.setItem('deviceId', newId)
+                //     setDeviceId(newId)
+                // } else {
+                //     setDeviceId(id)
+                // }
+                setDeviceId(id)
+            })
     }, [])
+    
+    function onScreen() {
+        setLoaderVisible(false)
+    }
 
     // function getStatesData() {
     //     const url = 'http://tutofox.com/foodapp/api.json';
@@ -127,29 +177,29 @@ const Screen = (props) => {
     //     })
     // }
 
-    useEffect(() => {
+    // useEffect(() => {
         
-        // function getStatesData() {
+    //     // function getStatesData() {
     
-        // }
+    //     // }
 
-        // const getStatesData = () => {
-        //     fetch('https://jsonplaceholder.typicode.com/posts/1', {
-        //         method: 'GET',
-        //     })
-        //     .then(response => {
-        //         response.json()
-        //     })
-        //     // .then(responseJson => {
-        //     //     console.log(responseJson)
-        //     // })
-        //     // .catch(error => {
-        //     //     console.log(error)
-        //     // })
-        // }
+    //     // const getStatesData = () => {
+    //     //     fetch('https://jsonplaceholder.typicode.com/posts/1', {
+    //     //         method: 'GET',
+    //     //     })
+    //     //     .then(response => {
+    //     //         response.json()
+    //     //     })
+    //     //     // .then(responseJson => {
+    //     //     //     console.log(responseJson)
+    //     //     // })
+    //     //     // .catch(error => {
+    //     //     //     console.log(error)
+    //     //     // })
+    //     // }
 
-        // getStatesData()
-    }, [])
+    //     // getStatesData()
+    // }, [])
     
     // useEffect(() => {
     //     const fetchData = async () => {
@@ -187,13 +237,208 @@ const Screen = (props) => {
         ).then((resp) => {
             let user = firebase.auth().currentUser
             if (user) {
-                navigation.dispatch(StackActions.reset({
-                    index: 0,
-                    // key: 'HomeDrawer',
-                    actions: [
-                        NavigationActions.navigate({routeName: 'HomeDrawer'})
-                    ]
-                }))
+                const cityId = user.uid
+                const currentCity = firebase.database().ref('cities').child(cityId)
+
+                let snapExist = function() {
+                    return new Promise((resolve, reject) => {
+                        currentCity.child('devices').child(deviceId).once('value', snapshot => {
+                            resolve(snapshot.val())
+                        })
+                    })
+                    
+                }
+                
+                // console.log('--------FUNÇÃO CHAMADA-------')
+                
+                snapExist().then(resp => {
+                    // if (resp) {
+                    //     console.log('--------EXISTE-------')
+                    //     // currentCity.child('devices').child(deviceId).child('logged').set(true)
+                    //     currentCity.child('devices').child(deviceId).set({
+                    //         token,
+                    //         logged: true,
+                    //     })
+                    //     .then(() => {
+                    //         setTimeout(() => {
+                    //             navTo()
+                    //         }, 1500)
+                    //     })
+                    //     .catch(error => {
+                    //         setLoaderVisible(false)
+                    //         toastMsg(`${error.code} - ${error.message}`)
+                    //         console.log(error)
+                    //     })
+
+                    // } else {
+                    //     console.log('--------NÃO EXISTE-------')
+                    //     let newDevice = currentCity.child('devices').child(deviceId)
+
+                    //     newDevice.set({ 
+                    //         token,
+                    //         logged: true,
+                    //     })
+                    //     .then(() => {
+                    //         setTimeout(() => {
+                    //             // navTo()
+                    //             saveCityId()
+                    //         }, 1500)
+                    //     })
+                    //     .catch(error => {
+                    //         setLoaderVisible(false)
+                    //         toastMsg(`${error.code} - ${error.message}`)
+                    //         console.log(error)
+                    //     })
+
+                    // }
+                })
+                // console.log(snapExist)
+
+                currentCity.child('devices').child(deviceId).set({
+                    token,
+                    logged: true,
+                })
+                .then(() => {
+                    setTimeout(() => {
+                        saveCityId()
+                    }, 1500)
+                })
+                .catch(error => {
+                    setLoaderVisible(false)
+                    toastMsg(`${error.code} - ${error.message}`)
+                    console.log(error)
+                })
+
+                
+                function saveCityId() {
+                    AsyncStorage.setItem('cityId', cityId)
+                        .then(() => {
+                            navTo()        
+                        })
+                        .catch(error => {
+                            toastMsg(`${error.code} - ${error.message}`)
+                            console.log(error)
+                        })
+                }
+
+                
+
+                // currentCity.child('devices').child(deviceId)
+                // .on('value', snapshot => {
+                //     if (snapshot.val() == null) {
+
+                //         let newDevice = currentCity.child('devices').child(deviceId)
+                //         newDevice.set({ token, logged: true })
+                //         .then(() => {
+                //             setTimeout(() => {
+                //                 navTo()
+                //             }, 1500)
+                //         })
+                //         .catch(error => {
+                //             setLoaderVisible(false)
+                //             toastMsg(`${error.code} - ${error.message}`)
+                //             console.log(error)
+                //         })
+
+                //     } else {
+
+                //         currentCity.child('devices').child(deviceId).child('logged').set(false)
+                //         .then(() => {
+                //             setTimeout(() => {
+                //                 navTo()
+                //             }, 1500)
+                //         })
+                //         .catch(error => {
+                //             setLoaderVisible(false)
+                //             toastMsg(`${error.code} - ${error.message}`)
+                //             console.log(error)
+                //         })
+
+                //     }
+                // })
+                
+                // currentCity.child('devices')
+                // .on('value', snapshot => {
+                //     let listDevices = []
+                //     // let deviceId = uuid()
+
+                //     snapshot.forEach(childItem => {
+                //         listDevices.push(childItem.val().token)
+                //         // listDevices = [ ...listDevices, childItem.val() ]
+                //     })
+
+                //     if (!listDevices.includes(token)) {
+                //         sendNow()
+                //     }
+                // })
+
+                // function existToken(t) {
+                //     if (t == true) {
+                //         return false
+                //     }
+                //     return true
+                // }
+
+                // function sendNow() {
+                    
+                // }
+
+                // if (existToken() == false) {
+                //     console.log('----------------TOKEN:----------------')
+                //     console.log(token)
+
+                    
+                // } else {
+                //     currentCity.child('devices').child(deviceId).child('logged').set(false)
+                //         .then(() => {
+                //             setTimeout(() => {
+                //                 navTo()
+                //             }, 1500)
+                //         })
+                //         .catch(error => {
+                //             setLoaderVisible(false)
+                //             toastMsg(`${error.code} - ${error.message}`)
+                //             console.log(error)
+                //         })
+                // }
+
+                // console.log('----------------TOKEN JÁ INSERIDO?----------------')
+                // console.log(existToken())
+
+                // console.log('----------------TOKEN JÁ INSERIDO?----------------')
+                // console.log(listDevices.includes(token))
+
+                // if (listDevices.length > 0) {
+                // }
+
+                // currentCity.child('devices')
+                // .orderByChild('token')
+                // .equalTo(token)
+                // .on('value', snapshot => {
+                //     if (!snapshot.val()) {
+                //         let newDevice = currentCity.child('devices').push()
+                //         newDevice.set({
+                //             token,
+                //             logged: true
+                //         })
+                //     } else {
+                //         console.log('----------------SNAPSHOT.VAL()----------------')
+                //         console.log(snapshot.val())
+                //     }
+                // })
+
+                // firebase.database().ref('cities').child(cityId).child('logged').set(true)
+
+                function navTo() {
+                    navigation.dispatch(StackActions.reset({
+                        index: 0,
+                        key: 'HomeDrawer',
+                        actions: [
+                            NavigationActions.navigate({routeName: 'HomeDrawer'})
+                        ]
+                    }))
+                }
+
             }
         })
         .catch((error) => {
@@ -251,16 +496,23 @@ const Screen = (props) => {
 
     return (
         <Page>
+            <NavigationEvents
+                onWillFocus={onScreen}
+            />
             <Scroll keyboardShouldPersistTaps='handled' >
                 <Header>
                     <Title
-                        size={normalize(50)}
+                        // size={normalize(50)}
+                        size={normalize(22)}
                         color='#fff'
-                    >Seja bem vindo!</Title>
+                        ltrSpacing={normalize(2)}
+                    >Seja bem vindo(a)!</Title>
                 </Header>
                 <Footer>
                     <Action
-                        style={{ marginTop: normalize(40) }}
+                        // style={{ marginTop: normalize(40) }}
+                        // style={{ marginTop: normalize(28.27) }}
+                        style={{ marginTop: normalize(28) }}
                     >
                         <Title>E-mail</Title>
                         <InputArea>
@@ -270,13 +522,17 @@ const Screen = (props) => {
                                 placeholder='email da cidade'
                                 autoCapitalize='none'
                                 keyboardType='email-address'
+                                returnKeyType='next'
+                                onSubmitEditing={() => ref_input2.current.focus()}
+                                blurOnSubmit={false}
                                 // placeholder={email}
                                 // editable={false}
                             />
                         </InputArea>
                     </Action>
                     <Action
-                        style={{ marginTop: normalize(40) }}
+                        // style={{ marginTop: normalize(40) }}
+                        style={{ marginTop: normalize(28) }}
                     >
                         <Title>Senha</Title>
                         <InputArea>
@@ -284,22 +540,32 @@ const Screen = (props) => {
                                 value={password}
                                 onChangeText={(t) => setPassword(t)}
                                 placeholder='senha da cidade'
+                                autoCapitalize='none'
+                                secureTextEntry={visibility}
+                                ref={ref_input2}
                             />
                             <ButtonVisibility
                                 activeOpacity={1}
-                                onPress={() => setVisibility1(!visibility1)}
+                                onPress={() => setvisibility(!visibility)}
+                                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                             >
-                                <Icon name={visibility1 ? 'visibility-off' : 'visibility'} size={20} color='#000' />
+                                <Icon name={visibility ? 'visibility' : 'visibility-off'} size={normalize(20)} color='#000' />
                             </ButtonVisibility>
                         </InputArea>
                     </Action>
                     <ButtonArea>
                         <ButtonSignIn
                             onPress={handleSignIn}
-                            underlayColor='#eee'
+                            underlayColor='#027510'
                         >
-                            <ButtonText>Entrar</ButtonText>
+                            <ButtonText color='#fff'>Entrar</ButtonText>
                         </ButtonSignIn>
+
+                        {/* <ButtonSignUp
+                            onPress={() => nav('RegisterCity', {fromLogin: true})}
+                        >
+                            <ButtonText>Cadastrar</ButtonText>
+                        </ButtonSignUp> */}
                     </ButtonArea>
                 </Footer>
             </Scroll>
