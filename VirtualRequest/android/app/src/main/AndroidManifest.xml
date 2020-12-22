@@ -1,18 +1,65 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.virtualrequest">
+  package="com.xisteriagaucha">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    
     <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
-      android:name=".MainApplication"
+      android:name="com.xisteriagaucha.MainApplication"
       android:label="@string/app_name"
       android:icon="@mipmap/ic_launcher"
       android:roundIcon="@mipmap/ic_launcher_round"
       android:allowBackup="false"
       android:theme="@style/AppTheme">
+
+      <!-- Adicionei recentemente -->
+      <!-- <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@mipmap/ic_notif"/> -->
+      <!-- <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="my_default_channel"/> -->
+      <!-- Adicionei recentemente -->
+
+      <meta-data  android:name="com.dieam.reactnativepushnotification.notification_channel_name"
+                android:value="YOUR NOTIFICATION CHANNEL NAME"/>
+      <meta-data  android:name="com.dieam.reactnativepushnotification.notification_channel_description"
+                  android:value="YOUR NOTIFICATION CHANNEL DESCRIPTION"/>
+
+      <!-- Change the value to true to enable pop-up for in foreground (remote-only, for local use ignoreInForeground) -->
+      <meta-data  android:name="com.dieam.reactnativepushnotification.notification_foreground"
+                  android:value="true"/>
+      <!-- Change the resource name to your App's accent color - or any other color you want -->
+      <meta-data  android:name="com.dieam.reactnativepushnotification.notification_color"
+                  android:resource="@color/white"/> <!-- or @android:color/{name} to use a standard color -->
+
+      <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationPublisher" />
+      <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationBootEventReceiver">
+          <intent-filter>
+              <action android:name="android.intent.action.BOOT_COMPLETED" />
+          </intent-filter>
+      </receiver>
+    
+      <service android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationRegistrationService"/>
+      <service
+          android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerService"
+          android:exported="false" >
+          <intent-filter>
+              <action android:name="com.google.firebase.MESSAGING_EVENT" />
+          </intent-filter>
+      </service>
+
+      <service android:name="io.invertase.firebase.messaging.RNFirebaseBackgroundMessagingService" />
+
+      <!-- Adicionei recentemente -->
+      <service android:name="com.evollu.react.fcm.MessagingService" android:enabled="true" android:exported="true">
+          <intent-filter>
+          <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+          </intent-filter>
+      </service>
+      <!-- Adicionei recentemente -->
+
       <activity
-        android:name=".MainActivity"
+        android:name="com.xisteriagaucha.MainActivity"
         android:label="@string/app_name"
         android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
         android:windowSoftInputMode="adjustResize"
@@ -26,3 +73,13 @@
     </application>
 
 </manifest>
+
+
+<!-- <service android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationRegistrationService"/>
+      <service android:name="io.invertase.firebase.messaging.RNFirebaseMessagingService">
+          <intent-filter>
+          <action android:name="com.google.firebase.MESSAGING_EVENT" />
+          </intent-filter>
+      </service> -->
+      <!-- For background messaging -->
+      <!-- <service android:name="io.invertase.firebase.messaging.RNFirebaseBackgroundMessagingService" /> -->

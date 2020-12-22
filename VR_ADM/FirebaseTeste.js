@@ -30,8 +30,6 @@ export default () => {
     */
     // firebase.database().ref('usuarios').child('2').child('idade').set(26)
 
-    let id = '-M-GQKOKTlhrUFx78qFs'
-
     // firebase.database().ref('usuarios').child(id).child('nome').set('Paulino')
 
     /*

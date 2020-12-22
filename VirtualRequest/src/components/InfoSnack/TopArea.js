@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { Animated, StyleSheet } from 'react-native'
+import { normalize } from '../../functions'
 import styled from 'styled-components/native'
 import firebase from '../../../firebase'
-import FontIcon from 'react-native-vector-icons/FontAwesome5'
+// import FontIcon from 'react-native-vector-icons/FontAwesome5'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 
 const TopArea = styled.View`
@@ -13,22 +14,24 @@ const TopArea = styled.View`
 // margin-vertical: 20px;
 
 const TopInternalArea = styled.View`
-    height: 140px;
+    height: ${normalize(140)}px;
     width: 100%;
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    padding: 20px;
+    padding: ${normalize(20)}px;
 `
 // padding-vertical: 20px;
 
-const ImageArea = styled.View`
+const ImageArea = styled.ImageBackground`
     flex: 1;
     height: 100%;
     background-color: rgb(245, 240, 235);
-    border-radius: 5px;
-    elevation: 2px;
+    border-radius: ${normalize(5)}px;
+    elevation: 2;
 `
+
+const ButtonImage = styled.TouchableOpacity``
 
 const PriceArea = styled.View`
     flex: 1;
@@ -38,35 +41,35 @@ const PriceArea = styled.View`
 `
 
 const AmountArea = styled.View`
-    width: 100px;
+    width: ${normalize(100)}px;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
 `
 
 const Button = styled.TouchableHighlight`
-    height: 40px;
-    width: 40px;
+    height: ${normalize(40)}px;
+    width: ${normalize(40)}px;
     justify-content: center;
     align-items: center;
-    border-radius: 20px;
+    border-radius: ${normalize(20)}px;
 `
 
-const PlusMinusIcon = styled.Image`
-    height: 20px;
-    width: 20px;
-`
+// const PlusMinusIcon = styled.Image`
+//     height: 20px;
+//     width: 20px;
+// `
 
 const TextPrice = styled.Text`
-    font-size: 18px;
+    font-size: ${normalize(18)}px;
     color: #ff2626;
 `
 
-const ImageSnack = styled.Image`
-    height: 100%;
-    width: 100%;
-    border-radius: 5px;
-`
+// const ImageSnack = styled.Image`
+//     height: 100%;
+//     width: 100%;
+//     border-radius: 5px;
+// `
 
 export default (props) => {
     const [ image, setImage ] = useState(null)
@@ -74,19 +77,20 @@ export default (props) => {
     // let opacityImg = new Animated.Value(0)
 
     const posts_img = firebase.storage().ref().child('posts')
-    const cityId = 'U56Sf1atD5TKSCJzxsKsvIDDlTr2'
+    // const cityId = 'U56Sf1atD5TKSCJzxsKsvIDDlTr2'
 
-    let { data, priceInfo, amount, handleSum, handleSub } = props
+    let { cityId, data, priceInfo, amount, handleSum, handleSub, nav } = props
 
     
     useEffect(() => {
         let dataId = data.id
         
-        // console.log(opacityImg)
+        console.log('------------DATA TOP_AREA------------')
+        console.log(data.id)
         
         if (data.image) {
             
-            posts_img.child(cityId).child(`${dataId}.jpg`).getDownloadURL().then((url) => {
+            posts_img.child(cityId).child('items').child(`${dataId}.jpg`).getDownloadURL().then((url) => {
                 const source = { uri: url }
 
                 setImage(source)
@@ -102,6 +106,51 @@ export default (props) => {
         }
     }, [])
 
+    function onPriceChange(text) {
+        let conv_num = num => isNaN(num) ? 0 : Number(num)
+        // let newText = Number(text)
+        // let cleaned = ('' + text).replace(/[^\d.,]/g, '')
+        let cleaned = ('' + text).replace(/\D/g, '')
+        // let num_format = Number(text).toFixed(2).toString()
+        function afterComma() {
+            let intCleaned = conv_num(parseInt(cleaned))
+            // console.log(intCleaned)
+            let newCleaned = intCleaned.toString()
+            // console.log(intCleaned)
+            if (newCleaned.length === 0) {
+                return '00'
+            } else if (newCleaned.length === 1) {
+                return '0' + newCleaned
+            } else {
+                return newCleaned.slice(-2)
+            }
+        }
+
+        function afterPoint() {
+            let intCleaned = conv_num(parseInt(cleaned))
+            let newCleaned = intCleaned.toString()
+            if (newCleaned.length <= 2) {
+                return '0'
+            } else {
+                return newCleaned.slice(-5, -2)
+            }
+        }
+
+        function beforePoint() {
+            let intCleaned = conv_num(parseInt(cleaned))
+            let newCleaned = intCleaned.toString()
+            if (newCleaned.length >= 6) {
+                return newCleaned.slice(-8, -5) + '.'
+            } else {
+                return ''
+            }
+        }
+
+        let num_format = 'R$ ' + beforePoint() + afterPoint() + ',' + afterComma()
+
+        return num_format
+    }
+
     // useEffect(() => {
     //     console.log(opacityImg)
     // }, [opacityImg])
@@ -109,20 +158,29 @@ export default (props) => {
     return (
         <TopArea>
             <TopInternalArea>
-            <ImageArea>
-                {/* <ImageSnack source={{uri: props.img}} /> */}
-                {/* {image && <ImageSnack source={image} />} */}
-                {image && <Animated.Image source={image} style={[styles.image_snack, { opacity: opacityImg }]} />}
+            <ImageArea source={require('../../assets/images/fast-food-background.jpg')} imageStyle={{ borderRadius: normalize(5) }} >
+                <ButtonImage 
+                    onPress={() => nav('ViewImage', { cityId, data, image })}
+                    activeOpacity={1}
+                >
+                    {/* <ImageSnack source={{uri: props.img}} /> */}
+                    {/* {image && <ImageSnack source={image} />} */}
+                    {/* {image && <Animated.Image source={image} style={[styles.image_snack, { opacity: opacityImg }]} />} */}
+                    {image && <Animated.Image source={image} style={[styles.image_snack, { opacity: opacityImg }]} /> }
+                    {/* // <ImageSnack source={require('../../assets/images/fast-food-background.jpg')} /> */}
+                    {/* require('../../assets/images/fast-food-background.jpg') */}
+                </ButtonImage>
             </ImageArea>
             <PriceArea>
-                <TextPrice>R$ {priceInfo.toFixed(2).replace('.', ',')} </TextPrice>
+                {/* <TextPrice>R$ {priceInfo.toFixed(2).replace('.', ',')} </TextPrice> */}
+                <TextPrice>{onPriceChange(priceInfo.toFixed(2))}</TextPrice>
                 {/* <TextPrice>13</TextPrice> */}
                 <AmountArea>
                     <Button onPress={handleSub} underlayColor='rgba(0, 0, 0, .05)' >
                     {/* <Button underlayColor='rgba(0, 0, 0, .05)' > */}
                         {/* <PlusMinusIcon source={require('../../assets/icons/minus.png')} /> */}
                         {/* <FontIcon name='minus' size={20} color='#ff2626' /> */}
-                        <Icon name='remove' size={25} color='#ff2626' />
+                        <Icon name='remove' size={normalize(25)} color='#ff2626' />
                     </Button>
                     <TextPrice>{amount}</TextPrice>
                     {/* <TextPrice>1</TextPrice> */}
@@ -130,7 +188,7 @@ export default (props) => {
                     {/* <Button underlayColor='rgba(0, 0, 0, .05)' > */}
                         {/* <PlusMinusIcon source={require('../../assets/icons/plus.png')} /> */}
                         {/* <FontIcon name='plus' size={20} color='#ff2626' /> */}
-                        <Icon name='add' size={25} color='#ff2626' />
+                        <Icon name='add' size={normalize(25)} color='#ff2626' />
                     </Button>
                 </AmountArea>
             </PriceArea>
@@ -152,6 +210,7 @@ const styles = StyleSheet.create({
     image_snack: {
         height: '100%',
         width: '100%',
-        borderRadius: 5,
+        borderRadius: normalize(5),
+        backgroundColor: '#d3d3d3',
     }
 })

@@ -1,14 +1,21 @@
 import React, { useEffect, useState, useContext } from 'react'
 import { ToastAndroid, Keyboard } from 'react-native'
+import { NavigationEvents } from 'react-navigation'
+import { normalize } from '../functions'
 import styled from 'styled-components/native'
 import ImagePicker from 'react-native-image-picker'
 import RNFetchBlob from 'react-native-fetch-blob'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import uuid from 'uuid/v4'
 import firebase from '../../firebase'
-import { NavigationEvents } from 'react-navigation'
+import NetInfo from '@react-native-community/netinfo'
 
+// Contexts:
 import DataDetailsContext from '../contexts/DataDetailsContext'
+
+// Components:
+import LoadingPage from '../components/LoadingPage'
+import ButtonNoConnection from '../components/ButtonNoConnection'
 
 // window.XMLHttpRequest = RNFetchBlob.polyfill.XMLHttpRequest
 
@@ -30,74 +37,89 @@ const Scroll = styled.ScrollView`
 `
 
 const Header = styled.View`
-    height: 50px;
+    height: ${normalize(50)}px;
     width: 100%;
     justify-content: center;
     align-items: flex-start;
-    border-bottom-width: .5px;
+    border-bottom-width: ${normalize(.5)}px;
     border-color: #999;
-    padding-left: 20px;
+    padding-left: ${normalize(20)}px;
 `
 
 const HeaderTitle = styled.Text`
-    font-size: 18px;
+    font-size: ${normalize(18)}px;
     font-weight: bold;
     color: #999;
 `
 
 const TopAndMiddleArea = styled.View`
-    min-height: 450px;
+    min-height: ${normalize(450)}px;
     width: 100%;
     align-items: center;
 `
 
 const AddPhotoArea = styled.TouchableOpacity`
-    height: 200px;
+    height: ${normalize(200)}px;
     width: 90%;
     justify-content: center;
     align-items: center;
-    border: 1px dashed #ccc;
-    border-radius: 3px;
-    margin-vertical: 20px;
+    border: ${normalize(1)}px dashed #ccc;
+    border-radius: ${normalize(3)}px;
+    margin-vertical: ${normalize(20)}px;
 `
 
-const ButtonAddPhoto = styled.TouchableOpacity``
+const ButtonAddPhoto = styled.TouchableOpacity`
+    justify-content: center;
+    align-items: center;
+    background-color: #fe9601;
+    border-radius: ${normalize(3)}px;
+    position: absolute;
+    right: ${normalize(28)}px;
+    bottom: ${normalize(8)}px;
+    padding: ${normalize(6)}px;
+`
 
 const ImageArea = styled.View`
-    height: 200px;
+    height: ${normalize(200)}px;
     width: 100%;
     justify-content: center;
     align-items: center;
-    margin-vertical: 20px;
+    margin-vertical: ${normalize(20)}px;
 `
 
 const Image = styled.Image`
-    height: 200px;
+    height: ${normalize(200)}px;
     width: 90%;
     resize-mode: cover;
-    border-radius: 3px;
-    margin-vertical: 20px;
+    border-radius: ${normalize(3)}px;
+    margin-vertical: ${normalize(20)}px;
 `
 
 const Input = styled.TextInput`
-    height: ${props => props.height || '40px'};
+    height: ${props => props.height || normalize(40)}px;
     width: 90%;
-    border: 1px solid #999;
-    border-radius: 3px;
+    border: ${normalize(1)}px solid #999;
+    border-radius: ${normalize(3)}px;
     padding: 0px;
-    padding-left: 10px;
-    font-size: 18px;
-    margin-bottom: 20px;
+    padding-left: ${normalize(10)}px;
+    font-size: ${normalize(18)}px;
+    margin-bottom: ${normalize(20)}px;
+    color: ${props => props.color || '#000'}
 `
+// height: ${props => props.height || '40px'};
 
 const ButtonArea = styled.View`
-    height: 40px;
-    width: 90%;
+    height: ${normalize(80)}px;
+    width: 100%;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    margin-vertical: 20px;
+    border-top-width: ${normalize(.5)}px;
+    padding: ${normalize(20)}px;
 `
+// height: ${normalize(40)}px;
+// width: 90%;
+// margin-vertical: ${normalize(20)}px;
 
 const ButtonChoose = styled.TouchableHighlight`
     height: 100%;
@@ -105,20 +127,23 @@ const ButtonChoose = styled.TouchableHighlight`
     justify-content: center;
     align-items: center;
     background-color: ${props => props.bgColor || '#fe9601'};
-    border: 1px solid #fe9601;
-    border-radius: 3px;
+    border: ${normalize(1)}px solid #fe9601;
+    border-radius: ${normalize(3)}px;
 `
 
 const ButtonText = styled.Text`
-    font-size: 18px;
+    font-size: ${normalize(18)}px;
     color: ${props => props.color || '#fff'};
 `
 
 const Screen = (props) => {
+    const [ loading, setLoading ] = useState(false)
+    const [ noConnection, setNoConnection ] = useState(false)
     const [ image, setImage ] = useState(null)
     const [ name, setName ] = useState('')
     const [ description, setDescription ] = useState('')
     const [ price, setPrice ] = useState('')
+    const [ priceColor, setPriceColor ] = useState('')
     const [ dataDetails, setDataDetails ] = useContext(DataDetailsContext)
 
     let { navigation } = props
@@ -143,18 +168,50 @@ const Screen = (props) => {
     let data_id = uuid()
 
     useEffect(() => {
+        // setLoading(true)
+
+        NetInfo.fetch().then(state => {
+            if (!state.isConnected) {
+                setNoConnection(true)
+                endOfLoading()
+            } else {
+                setNoConnection(false)
+                getDetails()
+            }
+        })
+    }, [])
+
+    function endOfLoading() {
+        setTimeout(() => {
+            setLoading(false)
+        }, 2000)
+    }
+
+    function getDetails() {
+        setPriceColor('#999')
         // console.log(data)
         if (editEnabled) {
-            function getSection() {
-                posts.child(cityId).child(sectionId).child('data').child(dataId).on('value', snapshot => {
+            setLoading(true)
+
+            async function getSection() {
+                // posts.child(cityId).child(sectionId).child('data').on('value', snapshot => {
+                //     // console.log('Aqui!!!!!!!!!!!!')
+                //     // console.log(snapshot.val())
+                // })
+                // console.log('DATA ID:')
+                // console.log(params.dataIndex)
+                await posts.child(cityId).child(sectionId).child('data').child(dataId).on('value', snapshot => {
                     if (snapshot.val()) {
                         setName(snapshot.val().name)
                         setDescription(snapshot.val().description)
-                        setPrice(snapshot.val().price)
+                        // setPrice(snapshot.val().price)
+                        onChangePrice(snapshot.val().price)
                         setDataDetails(snapshot.val())
                         // console.log(snapshot.val())
                     }
                 })
+
+                endOfLoading()
             }
 
             if (dataImg) {
@@ -171,8 +228,8 @@ const Screen = (props) => {
             newData.id = data_id
             setDataDetails(newData)
         }
-    }, [])
-
+    }
+    
     const toastMsg = (msg) => {
         ToastAndroid.showWithGravityAndOffset(
             msg.toString(),
@@ -183,12 +240,69 @@ const Screen = (props) => {
         )
     }
 
-    const onChangePrice = (text) => {
-        let cleaned = ('' + text).replace(/\D/g, '')
-        // newData.price = cleaned
-        // setDataDetails(newData)
-        setPrice(cleaned)
+    function cleaned(text) {
+        let cleaned = ('' + text).replace(/\D/g, '');
+
+        return cleaned;
     }
+
+    function onChangePrice(text) {
+        // setPriceColor('#000')
+
+        let conv_num = num => isNaN(num) ? 0 : Number(num)
+        // let newText = Number(text)
+        // let cleaned = ('' + text).replace(/[^\d.,]/g, '')
+        
+
+        if (conv_num(Number(cleaned(text))) == 0) {
+            setPriceColor('#999')
+        } else {
+            setPriceColor('#000')
+        }
+        // let num_format = Number(text).toFixed(2).toString()
+        function afterComma() {
+            let intCleaned = conv_num(parseInt(cleaned(text)))
+            console.log(intCleaned)
+            let newCleaned = intCleaned.toString()
+            console.log(intCleaned)
+            if (newCleaned.length === 0) {
+                return '00'
+            } else if (newCleaned.length === 1) {
+                return '0' + newCleaned
+            } else {
+                return newCleaned.slice(-2)
+            }
+        }
+
+        function afterPoint() {
+            let intCleaned = conv_num(parseInt(cleaned(text)))
+            let newCleaned = intCleaned.toString()
+            if (newCleaned.length <= 2) {
+                return '0'
+            } else {
+                return newCleaned.slice(-5, -2)
+            }
+        }
+
+        function beforePoint() {
+            let intCleaned = conv_num(parseInt(cleaned(text)))
+            let newCleaned = intCleaned.toString()
+            if (newCleaned.length >= 6) {
+                return newCleaned.slice(-8, -5) + '.'
+            } else {
+                return ''
+            }
+        }
+
+        let num_format = 'R$ ' + beforePoint() + afterPoint() + ',' + afterComma()
+
+        setPrice(num_format)
+    }
+
+    useEffect(() => {
+        console.log('Preço é:')
+        console.log(cleaned(price))
+    }, [price])
 
     // const postImage = () => {
     //     let uri = response.uri.replace('file://', '')
@@ -221,7 +335,10 @@ const Screen = (props) => {
 
     //     })
     // }
-
+    
+    // ImagePicker.launchImageLibrary({
+    //     mediaType
+    // })
     const selectImage = () => {
         const options = {
             noData: true
@@ -246,11 +363,14 @@ const Screen = (props) => {
     const handleAdvance = () => {
         if (name.trim().length < 1) {
             toastMsg('Digite o nome do item.')
+        } else if (price.trim().length < 1 || cleaned(price) === 0) {
+            toastMsg('Digite o preço do item.')
         } else {
-            console.log(dataDetails.image)
+            let newPrice = price.split('R$ ').join('').split('.').join('').replace(',', '.')
+            // console.log(dataDetails.image)
             newData.name = name
             newData.description = description
-            newData.price = price
+            newData.price = newPrice
             setDataDetails(newData)
             Keyboard.dismiss()
             nav('AddOns')
@@ -300,6 +420,12 @@ const Screen = (props) => {
         // setDataDetails(newData)
     }
 
+    if (loading) {
+        return (
+            <LoadingPage />
+        )
+    }
+
     return (
         <Page>
             <Scroll
@@ -317,94 +443,87 @@ const Screen = (props) => {
                     <HeaderTitle>Detalhes</HeaderTitle>
                 </Header>
                 <TopAndMiddleArea>
-                {image !== null ? 
-                <ImageArea>
-                <Image source={image} />
-                <ButtonAddPhoto
-                    onPress={selectImage}
-                    activeOpacity={.7}
-                    style={{
-                        padding: 6,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        backgroundColor: '#fe9601',
-                        borderRadius: 3,
-                        position: "absolute",
-                        right: 28,
-                        bottom: 8
-                    }}
-                >
-                    <ButtonText style={{ fontSize: 12, fontWeight: 'bold' }} color='#fff' >ALTERAR IMAGEM</ButtonText>
-                </ButtonAddPhoto>
-                </ImageArea>:
-                <AddPhotoArea
-                    onPress={selectImage}
-                    activeOpacity={.7}
-                >
-                    {/* <ButtonAddPhoto
+                    {image !== null ? 
+                    <ImageArea>
+                        <Image source={image} />
+                        <ButtonAddPhoto
+                            onPress={selectImage}
+                            activeOpacity={.7}
+                        >
+                            <ButtonText style={{ fontSize: normalize(12), fontWeight: 'bold' }} color='#fff' >ALTERAR IMAGEM</ButtonText>
+                        </ButtonAddPhoto>
+                    </ImageArea>:
+                    <AddPhotoArea
                         onPress={selectImage}
                         activeOpacity={.7}
-                    > */}
-                        <Icon name='image-plus' size={35} color='#ccc' />
-                    {/* </ButtonAddPhoto> */}
-                </AddPhotoArea>}
-                <Input
-                    // value={name}
-                    onChangeText={(t) => setName(t)}
-                    value={name}
-                    // onChangeText={text => {
-                    //     newData.name = text
-                    //     setDataDetails(newData)
-                    // }}
-                    placeholder='Nome'
-                />
-                <Input
-                    // value={description}
-                    onChangeText={(t) => setDescription(t)}
-                    value={description}
-                    // onChangeText={text => {
-                    //     newData.description = text
-                    //     setDataDetails(newData)
-                    // }}
-                    placeholder='Descrição (opcional)'
-                    height='60px'
-                    // numberOfLines={3}
-                    multiline={true}
-                    // maxLength={10}
-                />
-                <Input
-                    // value={price}
-                    // onChangeText={(t) => setPrice(t)}
-                    value={price}
-                    onChangeText={text => onChangePrice(text)}
-                    placeholder='Preço'
-                    keyboardType='numeric'
-                />
+                    >
+                        {/* <ButtonAddPhoto
+                            onPress={selectImage}
+                            activeOpacity={.7}
+                        > */}
+                            <Icon name='image-plus' size={normalize(35)} color='#ccc' />
+                        {/* </ButtonAddPhoto> */}
+                    </AddPhotoArea>}
+                    <Input
+                        // value={name}
+                        onChangeText={(t) => setName(t)}
+                        value={name}
+                        // onChangeText={text => {
+                        //     newData.name = text
+                        //     setDataDetails(newData)
+                        // }}
+                        placeholder='Nome'
+                    />
+                    <Input
+                        // value={description}
+                        onChangeText={(t) => setDescription(t)}
+                        value={description}
+                        // onChangeText={text => {
+                        //     newData.description = text
+                        //     setDataDetails(newData)
+                        // }}
+                        placeholder='Descrição (opcional)'
+                        height={normalize(60)}
+                        // numberOfLines={3}
+                        multiline={true}
+                        // maxLength={10}
+                    />
+                    <Input
+                        // value={price}
+                        // onChangeText={(t) => setPrice(t)}
+                        value={price}
+                        onChangeText={text => onChangePrice(text)}
+                        placeholder='Preço'
+                        keyboardType='numeric'
+                        color={priceColor}
+                        maxLength={13}
+                    />
                 </TopAndMiddleArea>
-                <ButtonArea>
-                    <ButtonChoose
-                        onPress={() => nav('Menu')}
-                        bgColor='#fff'
-                        underlayColor='#eee'
-                    >
-                        <ButtonText color='#fe9601' >Cancelar</ButtonText>
-                    </ButtonChoose>
-
-                    <ButtonChoose
-                        onPress={handleAdvance}
-                        underlayColor='#f18b00'
-                    >
-                        <ButtonText>Próximo</ButtonText>
-                    </ButtonChoose>
-                </ButtonArea>
             </Scroll>
+            <ButtonArea>
+                <ButtonChoose
+                    onPress={() => nav('Menu')}
+                    bgColor='#fff'
+                    underlayColor='#eee'
+                >
+                    <ButtonText color='#fe9601' >Cancelar</ButtonText>
+                </ButtonChoose>
+
+                <ButtonChoose
+                    onPress={handleAdvance}
+                    // underlayColor='#f18b00'
+                    underlayColor='#e5921a'
+                >
+                    <ButtonText>Próximo</ButtonText>
+                </ButtonChoose>
+            </ButtonArea>
         </Page>
     )
 }
 
 Screen.navigationOptions = () => {
     return {
-        tabBarLabel: 'Detalhes'
+        tabBarLabel: 'Detalhes',
     }
 }
 

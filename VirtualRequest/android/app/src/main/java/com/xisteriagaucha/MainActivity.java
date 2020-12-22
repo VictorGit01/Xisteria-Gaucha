@@ -1,4 +1,4 @@
-package com.vr_adm;
+package com.xisteriagaucha;
 
 import com.facebook.react.ReactActivity;
 
@@ -8,6 +8,14 @@ import com.facebook.react.ReactRootView;
 import com.swmansion.gesturehandler.react.RNGestureHandlerEnabledRootView;
 //
 
+// Adicionei recentemente:
+import android.content.Intent;
+// 
+
+// Eu adicionei para a biblioteca de imersão para manter a cor da barra de navegação do android:
+import com.rnimmersive.RNImmersiveModule;
+// 
+
 public class MainActivity extends ReactActivity {
 
   /**
@@ -16,7 +24,7 @@ public class MainActivity extends ReactActivity {
    */
   @Override
   protected String getMainComponentName() {
-    return "VR_ADM";
+    return "VirtualRequest";
   }
 
   // Eu coloquei aqui!
@@ -31,4 +39,22 @@ public class MainActivity extends ReactActivity {
   }
   //
 
+  // Eu Coloquei aqui!
+  @Override
+    public void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+    }
+  //
+
+  // Eu adicionei para a biblioteca de imersão para manter a cor da barra de navegação do android:
+  @Override
+  public void onWindowFocusChanged(boolean hasFocus) {
+    super.onWindowFocusChanged(hasFocus);
+
+    if (hasFocus && RNImmersiveModule.getInstance() != null) {
+      RNImmersiveModule.getInstance().emitImmersiveStateChangeEvent();
+    }
+  }
+  // 
 }

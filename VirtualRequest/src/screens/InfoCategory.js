@@ -1,18 +1,25 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import { connect } from 'react-redux'
 import { Dimensions } from 'react-native'
+import { normalize } from '../functions'
 import styled from 'styled-components/native'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 import firebase from '../../firebase'
+import NetInfo from '@react-native-community/netinfo'
 
 // Components:
+import LoadingPage from '../components/LoadingPage';
 import ListItem from '../components/InfoCategory/ListItem';
+import NoConnection from '../components/NoConnection';
+
+// Contexts:
+import CallHistoryContext from '../contexts/CallHistoryContext'
 
 const { height, width } = Dimensions.get('window')
 
-function normalize(size) {
-    return (width + height) / size
-}
+// function normalize(size) {
+//     return (width + height) / size
+// }
 
 const Page = styled.SafeAreaView`
     flex: 1;
@@ -86,10 +93,14 @@ const Listing = styled.FlatList`
 // `
 
 const Screen = (props) => {
-    const [ list, setList ] = useState({})
+    const [ loading, setLoading ] = useState(true)
+    const [ noConnection, setNoConnection ] = useState(false)
+    const [ callNetInfo, setCallNetInfo ] = useState(false)
+    const [ list, setList ] = useState(null)
     const [ images, setImages ] = useState([])
     const [ idsImg, setIdsImg ] = useState(null)
     const [ loadVisible, setLoadVisible ] = useState(true)
+    const [ callHistory, setCallHistory ] = useContext(CallHistoryContext)
 
     const posts = firebase.database().ref('posts')
     const posts_img = firebase.storage().ref().child('posts')
@@ -100,83 +111,100 @@ const Screen = (props) => {
     let nav = navigation.navigate
 
     useEffect(() => {
+        setLoading(true)
+
+        NetInfo.fetch().then(state => {
+            if (!state.isConnected) {
+                setNoConnection(true)
+                endOfLoading()
+            } else {
+                setNoConnection(false)
+                getCategory()
+            }
+        })
+    }, [callNetInfo])
+
+    function endOfLoading() {
+        setTimeout(() => {
+            setLoading(false)
+        }, 2000)
+    }
+
+    async function getCategory() {
         let isCancelled = false
 
-        async function getCategory() {
-            await posts.child(cityId).child(params.id).child('data').on('value', snapshot => {
-                try {
-                    if (!isCancelled) {
-                        let newList = []
-                        let newIdsImg = []
-                        let newImages = []
-                        snapshot.forEach((childItem) => {
-                            newList.push(childItem.val())
-                            // if (childItem.val().image) {
-                            //     // newIdsImg.push(childItem.val().id)
-                            //     // console.log('Imagem exist')
-                            //     posts_img.child(cityId).child(`${childItem.val().id}.jpg`).getDownloadURL().then((url) => {
-                            //         const source = { uri: url }
-                
-                            //         // setImages([...newImages, source ])
-                            //         newImages.push({
-                            //             source
-                            //         })
-                            //         // console.log(newImages)
-                            //         // return source
-                            //     })
-                            // }
-                        })
-
-                        // console.log(newImages)
-
-                        let seen = {}
-                        let newListNotDup = newList.filter(function(entry) {
-                            let previous;
-                            if (seen.hasOwnProperty(entry.id)) {
-
-                                previous = seen[entry.id]
-
-                                return false
-                            }
-
-                            seen[entry.id] = entry
-
-                            return true
-                        })
-
-                        setList(newListNotDup)
-                        // setIdsImg(newIdsImg)
-                        // let newImages = Array.from(images)
-                        // let newImages = newIdsImg.every(item => {
-                        //     posts_img.child(cityId).child(`${item}.jpg`).getDownloadURL().then((url) => {
+        await posts.child(cityId).child(params.id).child('data').on('value', snapshot => {
+            try {
+                if (!isCancelled) {
+                    let newList = []
+                    let newIdsImg = []
+                    let newImages = []
+                    snapshot.forEach((childItem) => {
+                        newList.push(childItem.val())
+                        // if (childItem.val().image) {
+                        //     // newIdsImg.push(childItem.val().id)
+                        //     // console.log('Imagem exist')
+                        //     posts_img.child(cityId).child(`${childItem.val().id}.jpg`).getDownloadURL().then((url) => {
                         //         const source = { uri: url }
             
                         //         // setImages([...newImages, source ])
-                        //         // newImages.push({
-                        //         //     source
-                        //         // })
+                        //         newImages.push({
+                        //             source
+                        //         })
                         //         // console.log(newImages)
-                        //         return source
+                        //         // return source
                         //     })
-                        // })
-                        // // setImages(newImages)
-                        // console.log(newImages)
+                        // }
+                    })
 
-                    }
-                } catch(e) {
-                    if (!isCancelled) {
-                        console.log(e)
-                    }
+                    // console.log(newImages)
+
+                    let seen = {}
+                    let newListNotDup = newList.filter(function(entry) {
+                        let previous;
+                        if (seen.hasOwnProperty(entry.id)) {
+
+                            previous = seen[entry.id]
+
+                            return false
+                        }
+
+                        seen[entry.id] = entry
+
+                        return true
+                    })
+
+                    setList(newListNotDup)
+                    endOfLoading()
+                    // setIdsImg(newIdsImg)
+                    // let newImages = Array.from(images)
+                    // let newImages = newIdsImg.every(item => {
+                    //     posts_img.child(cityId).child(`${item}.jpg`).getDownloadURL().then((url) => {
+                    //         const source = { uri: url }
+        
+                    //         // setImages([...newImages, source ])
+                    //         // newImages.push({
+                    //         //     source
+                    //         // })
+                    //         // console.log(newImages)
+                    //         return source
+                    //     })
+                    // })
+                    // // setImages(newImages)
+                    // console.log(newImages)
+
                 }
-            })
-        }
-
-        getCategory()
+            } catch(e) {
+                if (!isCancelled) {
+                    console.log(e)
+                }
+            }
+        })
 
         return () => {
             isCancelled = true
         }
-    }, [])
+    }
 
     // useEffect(() => {
     //     // posts.child(cityId).child(params.id).child('data').on('value', snapshot => {
@@ -236,6 +264,16 @@ const Screen = (props) => {
         //         </>
         //     </Item>
         // )
+    }
+
+    if (loading) {
+        return <LoadingPage />
+    } else if (noConnection) {
+        return (
+            <Page style={{ justifyContent: 'center' }} >
+                <NoConnection onPress={() => setCallNetInfo(!callNetInfo)} />
+            </Page>
+        )
     }
 
     return (

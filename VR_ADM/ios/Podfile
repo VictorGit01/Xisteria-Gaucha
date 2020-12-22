@@ -39,9 +39,17 @@ target 'VR_ADM' do
 
   pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
 
-  pod 'react-native-fetch-blob', :path => '../node_modules/react-native-fetch-blob'
 
   pod 'RNDateTimePicker', :path => '../node_modules/@react-native-community/datetimepicker'
+
+  pod 'RNFBApp', :path => '../node_modules/@react-native-firebase/app'
+
+  pod 'RNFBMessaging', :path => '../node_modules/@react-native-firebase/messaging'
+
+
+  pod 'RNDeviceInfo', :path => '../node_modules/react-native-device-info'
+
+  pod 'react-native-fetch-blob', :path => '../node_modules/react-native-fetch-blob'
 
   target 'VR_ADMTests' do
     inherit! :search_paths

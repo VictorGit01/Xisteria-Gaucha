@@ -1,4 +1,4 @@
-package com.virtualrequest;
+package com.gestordepedidos;
 
 import com.facebook.react.ReactActivity;
 
@@ -16,7 +16,7 @@ public class MainActivity extends ReactActivity {
    */
   @Override
   protected String getMainComponentName() {
-    return "VirtualRequest";
+    return "VR_ADM";
   }
 
   // Eu coloquei aqui!
@@ -30,4 +30,5 @@ public class MainActivity extends ReactActivity {
   };
   }
   //
+
 }

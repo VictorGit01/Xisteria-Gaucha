@@ -1,17 +1,29 @@
 import firebase from 'firebase'
 import './src/fixtimerbug'
+// import 'firebase/firebase-messaging'
+// import { FIREBASE_CONFIG } from '@env'
+import { 
+  API_KEY,
+  AUTH_DOMAIN,
+  DATABASE_URL,
+  PROJECT_ID,
+  STORAGE_BUCKET,
+  MESSAGING_SENDER_ID,
+  APP_ID,
+  MEASUREMENT_ID,
+} from '@env';
 
+// var firebaseConfig = FIREBASE_CONFIG;
 var firebaseConfig = {
-    apiKey: "AIzaSyCDzRGNG1IfVGoO9xbv5vYicBwdi4ExMOc",
-    authDomain: "teste-xisteria.firebaseapp.com",
-    databaseURL: "https://teste-xisteria.firebaseio.com",
-    projectId: "teste-xisteria",
-    storageBucket: "teste-xisteria.appspot.com",
-    messagingSenderId: "745899798801",
-    appId: "1:745899798801:web:a04724cb2c5f69cec11cb0",
-    measurementId: "G-1HP23XP1XE"
-};
-
+  apiKey: API_KEY,
+  authDomain: AUTH_DOMAIN,
+  databaseURL: DATABASE_URL,
+  projectId: PROJECT_ID,
+  storageBucket: STORAGE_BUCKET,
+  messagingSenderId: MESSAGING_SENDER_ID,
+  appId: APP_ID,
+  measurementId: MEASUREMENT_ID,
+}
 // Initialize Firebase
 if ( !firebase.apps.length ) {
     firebase.initializeApp(firebaseConfig);

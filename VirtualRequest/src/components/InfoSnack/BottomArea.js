@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { SectionList, Dimensions, ToastAndroid } from 'react-native'
+import { normalize } from '../../functions'
 import styled from 'styled-components/native'
 import FontIcon from 'react-native-vector-icons/FontAwesome5'
 import Icon from 'react-native-vector-icons/MaterialIcons'
@@ -7,28 +8,30 @@ import firebase from '../../../firebase'
 
 // Components:
 import TopArea from './TopArea'
+import { ForceTouchGestureHandler } from 'react-native-gesture-handler'
 
 const { height, width } = Dimensions.get('window')
 
-function normalize(size) {
-    return (width + height) / size
-}
+// function normalize(size) {
+//     return (width + height) / size
+// }
 
 const BottomArea = styled.View`
     flex: 1;
     width: 100%;
     align-items: center;
+    justify-content: center;
 `
 //border-top-width: .5px;
 
 const StuffArea = styled.View`
     width: 100%;
     justify-content: center;
-    border-top-width: .5px;
-    border-bottom-width: .5px;
+    border-top-width: ${normalize(.5)}px;
+    border-bottom-width: ${normalize(.5)}px;
     border-color: #999
-    padding-vertical: 15px;
-    padding-horizontal: 20px
+    padding-vertical: ${normalize(15)}px;
+    padding-horizontal: ${normalize(20)}px
 `
 //height: 80px
 //padding-vertical: 60px;
@@ -36,37 +39,37 @@ const StuffArea = styled.View`
 //padding-vertical: 10px
 
 const StuffText = styled.Text`
-    font-size: ${(props)=>props.fSize ? props.fSize : 20};
+    font-size: ${(props) => props.fSize ? props.fSize : normalize(20)}px;
     color: ${(props)=>props.color ? props.color : '#555'};
-    margin-vertical: 5px;
+    margin-vertical: ${normalize(5)}px;
     text-align: justify;
 `
 
 const Section = styled.View`
-    min-height: 60px;
+    min-height: ${normalize(60)}px;
     width: 100%;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    padding-horizontal: 20px;
-    padding-vertical: 10px;
-    border-top-width: .5px;
-    border-bottom-width: .5px;
+    padding-horizontal: ${normalize(20)}px;
+    padding-vertical: ${normalize(10)}px;
+    border-top-width: ${normalize(.5)}px;
+    border-bottom-width: ${normalize(.5)}px;
     border-color: #999;
-    margin-top: 20px;
+    margin-top: ${normalize(20)}px;
 `
 
 const SectionTitle = styled.Text`
-    font-size: 18px;
+    font-size: ${normalize(18)}px;
     font-weight: bold;
-    margin-vertical: 3px;
+    margin-vertical: ${normalize(3)}px;
 `
 
 const SectionCaption = styled.Text`
-    font-size: 16px;
+    font-size: ${normalize(16)}px;
     color: #777;
     font-weight: ${props => props.weight || 'normal'};
-    margin-vertical: 3px;
+    margin-vertical: ${normalize(3)}px;
 `
 
 const LeftSectArea = styled.View``
@@ -77,29 +80,28 @@ const RightSectArea = styled.View`
 `
 
 const MustText = styled.Text`
-    
-    font-size: 16px;
+    font-size: ${normalize(16)}px;
     font-weight: bold;
     text-align: center;
     text-align-vertical: center;
     color: ${props => props.color || '#fe9601'};
-    border: 2px solid ${props => props.bdColor || '#fe9601'};
-    border-radius: 50px;
+    border: ${normalize(2)}px solid ${props => props.bdColor || '#fe9601'};
+    border-radius: ${normalize(50)}px;
     padding-top: 0px;
-    padding-horizontal: 5px;
+    padding-horizontal: ${normalize(5)}px;
 `
 // width: ${normalize(11.7)}px;
 // margin-vertical: 5px;
 
 const Item = styled.TouchableHighlight`
-    min-height: 60px;
+    min-height: ${normalize(60)}px;
     flex-direction: row;
     justify-content: space-around;
     align-items: center;
-    border: .5px solid ${props => props.many_select >= 1 || props.one_select ? '#fe9601' : '#ccc'};
-    border-radius: 3px;
-    padding: 10px;
-    margin-horizontal: 5px;
+    border: ${normalize(.5)}px solid ${props => props.many_select >= 1 || props.one_select ? '#fe9601' : '#ccc'};
+    border-radius: ${normalize(3)}px;
+    padding: ${normalize(10)}px;
+    margin-horizontal: ${normalize(5)}px;
 `
 
 const ItemContent = styled.View`
@@ -107,26 +109,26 @@ const ItemContent = styled.View`
 `
 
 const ItemText = styled.Text`
-    font-size: 15px;
+    font-size: ${normalize(15)}px;
     color: #333;
 `
 
 const ItemCaption = styled.Text`
-    font-size: 16px;
+    font-size: ${normalize(16)}px;
     color: #999;
-    margin-bottom: 3px;
+    margin-bottom: ${normalize(3)}px;
 `
 
 const BoxExtra = styled.View`
-    height: 24px;
-    width: 24px;
+    height: ${normalize(24)}px;
+    width: ${normalize(24)}px;
     justify-content: center;
     align-items: center;
     background-color: ${props => props.many_select >= 1 || props.one_select ? '#b9f7bf' : '#ccc'};
-    border: 5px solid ${props => props.many_select >= 1 || props.one_select ? '#fe9601' : '#ccc'};
-    border-radius: ${props => props.radius || 12}px;
-    margin-right: 15px;
-    margin-left: 5px;
+    border: ${normalize(5)}px solid ${props => props.many_select >= 1 || props.one_select ? '#fe9601' : '#ccc'};
+    border-radius: ${props => props.radius || normalize(12)}px;
+    margin-right: ${normalize(15)}px;
+    margin-left: ${normalize(5)}px;
 `
 
 const AmountArea = styled.View`
@@ -136,35 +138,68 @@ const AmountArea = styled.View`
 `
 
 const ButtonAmount = styled.TouchableHighlight`
-    height: 40px;
-    width: 40px;
+    height: ${normalize(40)}px;
+    width: ${normalize(40)}px;
     justify-content: center;
     align-items: center;
-    border-radius: 20px;
-    margin-horizontal: 5px;
+    border-radius: ${normalize(20)}px;
+    margin-horizontal: ${normalize(5)}px;
 `
 
-const ButtonAddArea = styled.View`
-    height: 80px;
+// const ButtonAddArea = styled.View`
+//     height: 80px;
+//     width: 100%;
+//     justify-content: center;
+//     align-items: center;
+//     bottom: 0px;
+// `
+
+// const ButtonAdd = styled.TouchableOpacity`
+//     height: 40px;
+//     width: 90%;
+//     justify-content: center;
+//     align-items: center;
+//     background-color: #fe9601;
+//     border-radius: 3px;
+//     elevation: 2;
+// `
+
+const ButtonAddNote = styled.TouchableHighlight`
+    flex-direction: row;
     width: 100%;
-    justify-content: center;
-    align-items: center;
-    bottom: 0px;
-`
-
-const ButtonAdd = styled.TouchableOpacity`
-    height: 40px;
-    width: 90%;
-    justify-content: center;
-    align-items: center;
-    background-color: #fe9601;
-    border-radius: 3px;
-    elevation: 2;
+    border-top-width: ${normalize(.5)}px;
+    border-bottom-width: ${normalize(.5)}px;
+    border-color: #999;
+    padding: ${normalize(15)}px ${normalize(20)}px;
+    margin-top: ${normalize(20)}px;
 `
 
 const ButtonText = styled.Text`
-    font-size: 18px;
-    color: #fff;
+    font-size: ${props => props.size || normalize(16)}px;
+    color: #fe9601;
+    left: ${normalize(20)}px;
+`
+
+const InputVertArea = styled.View`
+    width: 90%;
+    align-self: center;
+    margin-top: ${normalize(20)}px;
+`
+
+const Input = styled.TextInput`
+    width: 100%;
+    border-bottom-width: ${normalize(1)}px;
+    border-color: #fe9601;
+    
+    padding-horizontal: ${normalize(10)}px;
+    font-size: ${normalize(16)}px;
+`
+// height: 50px;
+
+const TextCapInput = styled.Text`
+    font-size: ${normalize(14)}px;
+    color: #555;
+    alignSelf: flex-end;
 `
 
 export default (props) => {
@@ -172,15 +207,76 @@ export default (props) => {
     const [ loadBottom, setLoadBottom ] = useState(false)
     const [ selected, setSelected ] = useState({})
     const [ disabled, setDisabled ] = useState(false)
+    const [ activeObs, setActiveObs ] = useState(false)
     // const [ list, setList ] = useState(null)
 
     const add_ons = firebase.database().ref('add-ons')
     // const sectionListRef = useRef()
 
-    let { data, list, setList, sectionListRef, scrollTo, priceInfo, setPriceInfo, amount } = props
+    const inputRef_1 = useRef()
+
+    let { 
+        cityId, 
+        data, 
+        list, 
+        setList, 
+        sectionListRef, 
+        scrollTo, 
+        note, 
+        setNote, 
+        priceInfo, 
+        setPriceInfo, 
+        amount,
+        nav
+    } = props
 
     let mgBetween = 3
     let highlight = 'rgba(0, 0, 0, .03)'
+
+    function onPriceChange(text) {
+        let conv_num = num => isNaN(num) ? 0 : Number(num)
+        // let newText = Number(text)
+        // let cleaned = ('' + text).replace(/[^\d.,]/g, '')
+        let cleaned = ('' + text).replace(/\D/g, '')
+        // let num_format = Number(text).toFixed(2).toString()
+        function afterComma() {
+            let intCleaned = conv_num(parseInt(cleaned))
+            // console.log(intCleaned)
+            let newCleaned = intCleaned.toString()
+            // console.log(intCleaned)
+            if (newCleaned.length === 0) {
+                return '00'
+            } else if (newCleaned.length === 1) {
+                return '0' + newCleaned
+            } else {
+                return newCleaned.slice(-2)
+            }
+        }
+
+        function afterPoint() {
+            let intCleaned = conv_num(parseInt(cleaned))
+            let newCleaned = intCleaned.toString()
+            if (newCleaned.length <= 2) {
+                return '0'
+            } else {
+                return newCleaned.slice(-5, -2)
+            }
+        }
+
+        function beforePoint() {
+            let intCleaned = conv_num(parseInt(cleaned))
+            let newCleaned = intCleaned.toString()
+            if (newCleaned.length >= 6) {
+                return newCleaned.slice(-8, -5) + '.'
+            } else {
+                return ''
+            }
+        }
+
+        let num_format = 'R$ ' + beforePoint() + afterPoint() + ',' + afterComma()
+
+        return num_format
+    }
 
     /*
     useEffect(() => {
@@ -188,33 +284,35 @@ export default (props) => {
     }, [eggActive])
     */
 
-    // useEffect(() => {
-    //     add_ons.child(data.id).on('value', snapshot => {
-    //         let newList = Array.from(snapshot.val())
-    //         // console.log('---------------ANTIGA LISTA---------------')
-    //         // console.log(newList)
-    //         let must = 'must'
-    //         newList.forEach((item) => {
-    //             item.minQtt = item.minQtt.length == 0 ? 0 : Number(item.minQtt)
-    //             item.maxQtt = item.maxQtt.length == 0 ? 0 : Number(item.maxQtt)
-    //             // item.amount = item.must && item.maxQtt == 1 ? 1 : 0
-    //         })
-    //         // console.log('---------------NOVA LISTA---------------')
-    //         // console.log(newList)
-    //         // snapshot.forEach((childItem) => {
-    //         //     console.log(childItem.val())
-    //         // })
-    //         // let newList = []
-    //         // snapshot.forEach((childItem) => {
-    //         //     newList.push(childItem.val())
-    //         // })
-    //         // setList(newList)
-    //         setList(newList)
-    //         // console.log('---------------ATUAL LISTA---------------')
-    //         console.log(list)
-    //         // console.log(newList)
-    //     })
-    // }, [])
+    /*
+    useEffect(() => {
+        add_ons.child(data.id).on('value', snapshot => {
+            let newList = Array.from(snapshot.val())
+            // console.log('---------------ANTIGA LISTA---------------')
+            // console.log(newList)
+            let must = 'must'
+            newList.forEach((item) => {
+                item.minQtt = item.minQtt.length == 0 ? 0 : Number(item.minQtt)
+                item.maxQtt = item.maxQtt.length == 0 ? 0 : Number(item.maxQtt)
+                // item.amount = item.must && item.maxQtt == 1 ? 1 : 0
+            })
+            // console.log('---------------NOVA LISTA---------------')
+            // console.log(newList)
+            // snapshot.forEach((childItem) => {
+            //     console.log(childItem.val())
+            // })
+            // let newList = []
+            // snapshot.forEach((childItem) => {
+            //     newList.push(childItem.val())
+            // })
+            // setList(newList)
+            setList(newList)
+            // console.log('---------------ATUAL LISTA---------------')
+            console.log(list)
+            // console.log(newList)
+        })
+    }, [])
+    */
 
     /*
     useEffect(() => {
@@ -224,17 +322,15 @@ export default (props) => {
     }, [])
     */
 
-   function toastMsg(msg) {
-       ToastAndroid.showWithGravityAndOffset(
-           msg.toString(),
-           ToastAndroid.SHORT,
-           ToastAndroid.BOTTOM,
-           0,
-           180,
-       )
-   }
-
-   
+    function toastMsg(msg) {
+        ToastAndroid.showWithGravityAndOffset(
+            msg.toString(),
+            ToastAndroid.SHORT,
+            ToastAndroid.BOTTOM,
+            0,
+            normalize(180),
+        )
+    }
 
     function renderSectionHeader({section}) {
         let index_section = list.indexOf(section)
@@ -247,23 +343,49 @@ export default (props) => {
         
         let result_amount = list_amount.reduce((a, b) => { return conv_num(a) + conv_num(b) }, 0)
 
-        console.log('list')
-        console.log(list)
+        // console.log('list')
+        // console.log(list)
         return (
             <>
             {index_section == 0 &&
             <>
             <TopArea
+                cityId={cityId}
                 data={data}
                 priceInfo={props.priceInfo}
                 amount={props.amount}
                 handleSum={props.handleSum}
                 handleSub={props.handleSub}
+                nav={nav}
             />
+            {/* <StuffText style={{fontWeight: 'bold'}} >Ingredientes</StuffText> */}
+            {data.description ?
             <StuffArea>
-                {/* <StuffText style={{fontWeight: 'bold'}} >Ingredientes</StuffText> */}
-                <StuffText fSize={16} >{data.description}</StuffText>
-            </StuffArea>
+                <StuffText fSize={normalize(16)} >{data.description}</StuffText>
+            </StuffArea> : null}
+            {/* {activeObs ?
+            <InputVertArea>
+                <Input
+                    value={note}
+                    onChangeText={(t) => setNote(t)}
+                    placeholder='Observação'
+                    placeholderTextColor='#999'
+                    selectionColor='#fe9601'
+                    autoFocus={true}
+                    maxLength={100}
+                    multiline={true}
+                    // ref={inputRef_1}
+                    blurOnSubmit={true}
+                />
+                <TextCapInput>{note.length}/100 caracteres</TextCapInput>
+            </InputVertArea>
+            :
+            <ButtonAddNote onPress={() => setActiveObs(true)} underlayColor='#eee' >
+                <>
+                <FontIcon name='plus' size={normalize(20)} color='#fe9601' />
+                <ButtonText>Adicionar observação</ButtonText>
+                </>
+            </ButtonAddNote>} */}
             </>}
             <Section>
                 <LeftSectArea>
@@ -301,10 +423,13 @@ export default (props) => {
         // setAmount(list[index_section].data[index].amount)
         let listCopy = Array.from(list)
         let last_index = listCopy.length - 1
+        let last_index_item = section.data.length - 1
         let must = 'must'
         // item.amount = 1
         // console.log(list[index_section].data[index])
-        // console.log(item)
+        console.log('----------------SEÇÃO DO ITEM----------------')
+        // console.log(section.data.indexOf(item))
+        console.log(section.data.length)
         // listCopy[index_section].data[index].amount = item.hasOwnProperty(must) && item.maxQtt == 1 ? 1 : 0
 
         function resultPriceAmount() {
@@ -318,7 +443,7 @@ export default (props) => {
             let result_amount = list_amount.reduce((a, b) => { return conv_num(a) + conv_num(b) }, 0)
             // let result_amount = list_amount.reduce((a, b) => { return conv_num(b) }, 0)
 
-            console.log(result_amount)
+            // console.log(result_amount)
 
             return result_amount
         }
@@ -406,7 +531,7 @@ export default (props) => {
                     // console.log('Ativou opção 1')
                 } else if (section.hasOwnProperty(must) && section.minQtt == 0 && section.maxQtt == 0) {
                     listCopy[index_section].must = resultItems() > 0 ? false : true
-                    console.log('Ativou Opção 2')
+                    // console.log('Ativou Opção 2')
                 } else if (section.hasOwnProperty(must)) {
                     listCopy[index_section].must = resultItems() == section.maxQtt ? false : true
                     // console.log('Ativou opção 3')
@@ -472,7 +597,7 @@ export default (props) => {
             // let must = 'must'
 
             if (section.hasOwnProperty(must)) {
-                console.log(resultItems())
+                // console.log(resultItems())
                 // console.log('Must existe em section.')
                 // listCopy[index_section].must = resultItems() > 0 ? false : true
                 listCopy[index_section].must = (resultItems() == section.maxQtt && !condManyItems) || (resultItems() > 0 && condManyItems) ? false : true
@@ -557,10 +682,44 @@ export default (props) => {
             return false
         }
 
+        function observationItem() {
+            if (index_section === last_index && index === last_index_item) {
+                if (activeObs) {
+                    return (
+                        <InputVertArea>
+                            <Input
+                                value={note}
+                                onChangeText={(t) => setNote(t)}
+                                placeholder='Observação'
+                                placeholderTextColor='#999'
+                                selectionColor='#fe9601'
+                                autoFocus={true}
+                                maxLength={100}
+                                multiline={true}
+                                // ref={inputRef_1}
+                                blurOnSubmit={true}
+                            />
+                            <TextCapInput>{note.length}/100 caracteres</TextCapInput>
+                        </InputVertArea>
+                    )
+                } else {
+                    return (
+                        <ButtonAddNote onPress={() => setActiveObs(true)} underlayColor='rgba(0, 0, 0, .03)' >
+                            <>
+                            <FontIcon name='plus' size={normalize(20)} color='#fe9601' />
+                            <ButtonText>Adicionar observação</ButtonText>
+                            </>
+                        </ButtonAddNote>
+                    )
+                }
+            }
+        }
+
         // let condManySelect = section.multItem || (!section.multItem && section.maxQtt > 1) || (section.minQtt >= 0 && section.maxQtt.trim().length == 0) ? item.amount : null
         let condManySelect = section.multItem || (!section.multItem && section.maxQtt > 1) || (section.minQtt >= 0 && section.maxQtt == 0) ? item.amount : null
 
         return (
+            <>
             <Item
                 onPress={handleSelect}
                 underlayColor={resultItems() == section.maxQtt ? '#b9f7bf' : 'rgba(0, 0, 0, .03)'}
@@ -568,7 +727,7 @@ export default (props) => {
                 // one_select={selected.id == item.id}
                 one_select={section.minQtt == 0 && section.maxQtt == 1 ? item.amount : null}
                 style={{
-                    marginTop: index == 0 ? 20 : 15,
+                    marginTop: index == 0 ? normalize(20) : normalize(15),
                     // borderColor: selected.id == item.id ? '#fe9601' : '#ccc'
                 }}
                 // disabled={item.amount == section.maxQtt ? true : false}
@@ -590,29 +749,33 @@ export default (props) => {
                 >
                 </BoxExtra>
                 <ItemContent>
-                    <ItemText style={{ marginBottom: 3 }} >{item.name}</ItemText>
+                    <ItemText style={{ marginBottom: normalize(3) }} >{item.name}</ItemText>
                     {item.description ? <ItemCaption>{item.description}</ItemCaption> : null}
-                    {item.price ? <ItemText style={{ marginTop: 3 }} >R$ {price.toFixed(2).replace('.', ',')}</ItemText> : null}
+                    {/* {item.price ? <ItemText style={{ marginTop: 3 }} >R$ {price.toFixed(2).replace('.', ',')}</ItemText> : null} */}
+                    {item.price ? <ItemText style={{ marginTop: normalize(3) }} >{onPriceChange(item.price)}</ItemText> : null}
                 </ItemContent>
-                {section.multItem && <AmountArea>
+                {section.multItem &&
+                <AmountArea>
                     <ButtonAmount
                         onPress={handleRemove}
                         underlayColor='rgba(0, 0, 0, .03)'
                     >
                         {/* <FontIcon name='minus' size={20} color='#ff2626' /> */}
-                        <Icon name='remove' size={25} color='#ff2626' />
+                        <Icon name='remove' size={normalize(25)} color='#ff2626' />
                     </ButtonAmount>
-                        <ItemText style={{ color: '#ff2626', fontSize: 16 }} >{item.amount}</ItemText>
+                        <ItemText style={{ color: '#ff2626', fontSize: normalize(16) }} >{item.amount}</ItemText>
                     <ButtonAmount
                         onPress={handleAdd}
                         underlayColor={resultItems() == section.maxQtt ? '#b9f7bf' : 'rgba(0, 0, 0, .03)'}
                     >
                         {/* <FontIcon name='plus' size={20} color='#ff2626' /> */}
-                        <Icon name='add' size={25} color='#ff2626' />
+                        <Icon name='add' size={normalize(25)} color='#ff2626' />
                     </ButtonAmount>
                 </AmountArea>}
                 </>
             </Item>
+            {observationItem()}
+            </>
         )
     }
 
@@ -621,18 +784,44 @@ export default (props) => {
             {!list || list.length == 0 &&
             <>
                 <TopArea
+                    cityId={cityId}
                     data={data}
                     priceInfo={props.priceInfo}
                     amount={props.amount}
                     handleSum={props.handleSum}
                     handleSub={props.handleSub}
+                    nav={nav}
                 />
                 {data.description ? <StuffArea>
-                    <StuffText fSize={16} >{data.description}</StuffText>
+                    <StuffText fSize={normalize(16)} >{data.description}</StuffText>
                 </StuffArea> : null}
+                {activeObs ?
+                <InputVertArea>
+                    <Input
+                        value={note}
+                        onChangeText={(t) => setNote(t)}
+                        placeholder='Observação'
+                        placeholderTextColor='#999'
+                        selectionColor='#fe9601'
+                        autoFocus={true}
+                        maxLength={100}
+                        multiline={true}
+                        blurOnSubmit={true}
+                    />
+                    <TextCapInput>{note.length}/100 caracteres</TextCapInput>
+                </InputVertArea>
+                :
+                <ButtonAddNote onPress={() => setActiveObs(true)} underlayColor='rgba(0, 0, 0, .03)' >
+                    <>
+                    <FontIcon name='plus' size={normalize(20)} color='#fe9601' />
+                    <ButtonText >Adicionar observação</ButtonText>
+                    </>
+                </ButtonAddNote>}
             </>}
             {/* <StuffText style={{fontWeight: 'bold'}} >Ingredientes</StuffText> */}
             <SectionList
+                // contentContainerStyle={{ paddingBottom: normalize(80) }}
+                contentContainerStyle={{ paddingBottom: normalize(40) }}
                 style={{ flex: 1, width: '100%' }}
                 sections={list}
                 renderSectionHeader={renderSectionHeader}
@@ -651,6 +840,7 @@ export default (props) => {
                 }}
                 keyExtractor={(item) => item.id}
                 ref={sectionListRef}
+                keyboardShouldPersistTaps='handled'
             />
             {/* <ButtonAddArea>
                 <ButtonAdd>

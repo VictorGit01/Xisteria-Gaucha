@@ -28,12 +28,19 @@ build/
 .gradle
 local.properties
 *.iml
+aguranchave.jks
+google-services.json
+gradle.properties
 
 # node.js
 #
 node_modules/
 npm-debug.log
 yarn-error.log
+# firebase.js
+FirebaseTeste.js
+TesteMesclagem.js
+.env
 
 # BUCK
 buck-out/

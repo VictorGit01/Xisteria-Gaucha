@@ -1,22 +1,69 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.vr_adm">
+  package="com.gestordepedidos">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
-      android:name=".MainApplication"
+      android:name="com.gestordepedidos.MainApplication"
       android:label="@string/app_name"
       android:icon="@mipmap/ic_launcher"
       android:roundIcon="@mipmap/ic_launcher_round"
       android:allowBackup="false"
       android:theme="@style/AppTheme">
+
+      <!-- Adicionei no mês 11 de 2020 -->
+      <!-- <meta-data
+        android:name="com.batch.android.push.smallicon"
+        android:resource="@drawable/ic_notification_icon"/> -->
+      <!--  -->
+
+      <meta-data  android:name="com.dieam.reactnativepushnotification.notification_channel_name"
+                android:value="YOUR NOTIFICATION CHANNEL NAME"/>
+      <meta-data  android:name="com.dieam.reactnativepushnotification.notification_channel_description"
+                  android:value="YOUR NOTIFICATION CHANNEL DESCRIPTION"/>
+
+      <!-- Change the value to true to enable pop-up for in foreground (remote-only, for local use ignoreInForeground) -->
+      <meta-data  android:name="com.dieam.reactnativepushnotification.notification_foreground"
+                  android:value="true"/>
+      <!-- Change the resource name to your App's accent color - or any other color you want -->
+      <meta-data  android:name="com.dieam.reactnativepushnotification.notification_color"
+                  android:resource="@color/white"/> <!-- or @android:color/{name} to use a standard color -->
+      <!-- Adicionei em 15/11/2020 para resolver o problema de não estar aparecendo o ícone na notificação. -->
+      <!-- <meta-data android:name="com.google.firebase.messaging.default_notification_icon" 
+                  android:resource="@drawable/ic_notification_icon" />
+      <meta-data android:name="com.dieam.reactnativepushnotification.notification_icon" 
+                  android:resource="@drawable/ic_notification_icon" /> -->
+      <!--  -->
+
+      <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationActions" />
+      <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationPublisher" />
+      <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationBootEventReceiver">
+          <intent-filter>
+              <action android:name="android.intent.action.BOOT_COMPLETED" />
+          </intent-filter>
+      </receiver>
+
+      <service android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationRegistrationService"/>
+      <service
+          android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerService"
+          android:exported="false" >
+          <intent-filter>
+              <action android:name="com.google.firebase.MESSAGING_EVENT" />
+          </intent-filter>
+      </service>
+
       <activity
-        android:name=".MainActivity"
+        android:name="com.gestordepedidos.MainActivity"
         android:label="@string/app_name"
         android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
-        android:windowSoftInputMode="adjustResize">
+        android:windowSoftInputMode="adjustResize"
+        android:screenOrientation="portrait">
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />

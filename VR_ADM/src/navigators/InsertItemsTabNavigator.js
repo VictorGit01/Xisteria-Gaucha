@@ -41,7 +41,7 @@ InsertItemsTabNavigator.navigationOptions = ({ navigation }) => {
     let editEnabled = params.editEnabled
 
     return {
-        headerTitle: editEnabled ? 'Editar item' : 'Criar item'
+        headerTitle: editEnabled ? 'Editar item' : 'Criar item',
     }
 }
 

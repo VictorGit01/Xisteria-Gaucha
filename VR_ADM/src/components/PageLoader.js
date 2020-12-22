@@ -13,7 +13,7 @@ const Page = styled.SafeAreaView`
 export default () => {
     return (
         <Page>
-            <ActivityIndicator size='large' color='#077a15' />
+            <ActivityIndicator size='large' style={{ height: 100 }} color='#077a15' />
         </Page>
     )
 }

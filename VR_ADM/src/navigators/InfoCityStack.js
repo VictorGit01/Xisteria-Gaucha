@@ -2,10 +2,14 @@ import { createStackNavigator } from 'react-navigation-stack';
 
 // Screens:
 import InfoCity from '../screens/InfoCity';
+import ChangePass from '../screens/ChangePass';
 
 const InfoCityStack = createStackNavigator({
     InfoCity: {
         screen: InfoCity
+    },
+    ChangePass: {
+        screen: ChangePass
     }
 }, {
     defaultNavigationOptions: {

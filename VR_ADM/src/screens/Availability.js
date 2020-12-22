@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react'
 import { ToastAndroid } from 'react-native'
+import { normalize } from '../functions'
 import styled from 'styled-components/native'
 import RNFetchBlob from 'react-native-fetch-blob'
 import firebase from '../../firebase'
@@ -25,34 +26,34 @@ const Scroll = styled.ScrollView`
 `
 
 const Header = styled.View`
-    height: 50px;
+    height: ${normalize(50)}px;
     width: 100%;
     justify-content: center;
     align-items: flex-start;
-    border-bottom-width: .5px;
+    border-bottom-width: ${normalize(.5)}px;
     border-color: #999;
-    padding-left: 20px;
+    padding-left: ${normalize(20)}px;
 `
 
 const HeaderTitle = styled.Text`
-    font-size: 18px;
-    font-weight: bold
+    font-size: ${normalize(18)}px;
+    font-weight: bold;
     color: #999;
 `
 
 const TopMiddleArea = styled.View`
-    min-height: 450px;
+    min-height: ${normalize(450)}px;
     width: 100%;
     align-items: center;
 `
 
 const Title = styled.Text`
     width: 100%
-    font-size: 18px;
+    font-size: ${normalize(18)}px;
     font-weight: bold;
     color: #333;
-    padding: 20px 20px 10px;
-    border-bottom-width: 1px;
+    padding: ${normalize(20)}px ${normalize(20)}px ${normalize(10)}px;
+    border-bottom-width: ${normalize(1)}px;
     border-color: #ccc;
 `
 
@@ -60,35 +61,42 @@ const Item = styled.TouchableHighlight`
     flex-direction: row;
     width: 100%;
     align-items: center;
-    padding: 15px 10px;
-    border-bottom-width: 1px;
+    padding: ${normalize(15)}px ${normalize(10)}px;
+    border-bottom-width: ${normalize(1)}px;
     border-color: #ccc;
 `
 
 const BoxSquare = styled.View`
-    height: 24px;
-    width: 24px;
+    height: ${normalize(24)}px;
+    width: ${normalize(24)}px;
     justify-content: center;
     align-items: center;
     background-color: ${props => props.selected ? '#fff' : '#ddd'};
-    border: 5px solid ${props => props.selected ? '#fe9601' : '#ddd'};
-    border-radius: 3px;
-    margin-right: 15px;
-    margin-left: 5px;
+    border: ${normalize(5)}px solid ${props => props.selected ? '#fe9601' : '#ddd'};
+    border-radius: ${normalize(3)}px;
+    margin-right: ${normalize(15)}px;
+    margin-left: ${normalize(5)}px;
 `
 
 const ItemText = styled.Text`
-    font-size: 18px;
+    font-size: ${normalize(18)}px;
 `
 
 const ButtonArea = styled.View`
-    height: 40px;
-    width: 90%;
+    height: ${normalize(80)}px;
+    width: 100%;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    margin-top: 20px;
+    border-top-width: ${normalize(.5)}px;
+    padding: ${normalize(20)}px;
 `
+// height: ${normalize(40)}px;
+// width: 90%;
+// flex-direction: row;
+// justify-content: space-between;
+// align-items: center;
+// margin-top: ${normalize(20)}px;
 
 const ButtonChoose = styled.TouchableHighlight`
     height: 100%;
@@ -96,12 +104,12 @@ const ButtonChoose = styled.TouchableHighlight`
     justify-content: center;
     align-items: center;
     background-color: ${props => props.bgColor || '#fe9601'};
-    border: 1px solid #fe9601;
-    border-radius: 3px;
+    border: ${normalize(1)}px solid #fe9601;
+    border-radius: ${normalize(3)}px;
 `
 
 const ButtonText = styled.Text`
-    font-size: 18px;
+    font-size: ${normalize(18)}px;
     color: ${props => props.color || '#fff'};
 `
 
@@ -150,6 +158,7 @@ const Screen = (props) => {
     // }, [selectedDays])
 
     useEffect(() => {
+        console.log(dataDetails)
         if (editEnabled) {
             // setDays(dataDetails.days)
             let filteredDaysIndex = dataDetails.days.map((x, y, a) => { return days.indexOf(x) })
@@ -421,23 +430,24 @@ const Screen = (props) => {
                         </Item>
                     ))}
                 </TopMiddleArea>
-                <ButtonArea>
-                    <ButtonChoose
-                        onPress={() => nav('AddOns')}
-                        bgColor='#fff'
-                        underlayColor='#eee'
-                    >
-                        <ButtonText color='#fe9601' >Voltar</ButtonText>
-                    </ButtonChoose>
-
-                    <ButtonChoose
-                        onPress={saveImage}
-                        underlayColor='#eee'
-                    >
-                        <ButtonText>Salvar</ButtonText>
-                    </ButtonChoose>
-                </ButtonArea>
             </Scroll>
+            <ButtonArea>
+                <ButtonChoose
+                    onPress={() => nav('AddOns')}
+                    bgColor='#fff'
+                    underlayColor='#eee'
+                >
+                    <ButtonText color='#fe9601' >Voltar</ButtonText>
+                </ButtonChoose>
+
+                <ButtonChoose
+                    onPress={saveImage}
+                    // underlayColor='#eee'
+                    underlayColor='#e5921a'
+                >
+                    <ButtonText>Salvar</ButtonText>
+                </ButtonChoose>
+            </ButtonArea>
         </Page>
     )
 }

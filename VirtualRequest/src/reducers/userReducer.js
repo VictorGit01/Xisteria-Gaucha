@@ -9,6 +9,7 @@ const initialState = {
     address: {},
     selected: '',
     cityId: '',
+    onScreen: false,
 }
 
 export default (state = initialState, action) => {
@@ -42,6 +43,9 @@ export default (state = initialState, action) => {
             break
         case 'SET_CITY_ID':
             return {...state, cityId: action.payload.cityId}
+            break
+        case 'SET_ON_SCREEN':
+            return {...state, onScreen: action.payload.onScreen}
             break
     }
 
